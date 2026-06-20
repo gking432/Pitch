@@ -194,6 +194,9 @@ const scope = [
   "Creative + AI operations"
 ];
 
+// Repeated product set for the hero marquee; each row renders it twice for a seamless loop.
+const marqueeSocks = [...productImages, ...productImages, ...productImages];
+
 const flywheel = [
   {
     label: "Discover",
@@ -333,9 +336,19 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
 }
 
 export default function Home() {
+  const [theme, setTheme] = useState<"dusk" | "day">("dusk");
   return (
-    <main className="rf-page">
+    <main className={`rf-page ${theme === "day" ? "rf-day" : ""}`}>
       <div className="rf-backdrop" aria-hidden />
+
+      <div className="rf-theme-toggle" role="group" aria-label="Color theme">
+        <button className={theme === "dusk" ? "is-on" : ""} onClick={() => setTheme("dusk")} type="button">
+          Dusk
+        </button>
+        <button className={theme === "day" ? "is-on" : ""} onClick={() => setTheme("day")} type="button">
+          Daylight
+        </button>
+      </div>
 
       <div className="rf-official">
         <span className="rf-flag">FL</span>
@@ -356,35 +369,45 @@ export default function Home() {
         </div>
       </nav>
 
-      <ScrollScene className="rf-hero" height={1.7} id="top">
+      <ScrollScene className="rf-hero" height={1.9} id="top">
         {(progress) => {
-          const textOpacity = useTransform(progress, [0, 0.16, 0.74, 0.94], [0, 1, 1, 0]);
-          const textY = useTransform(progress, [0, 0.16, 0.74, 0.94], [40, 0, 0, -90]);
-          const figureOpacity = useTransform(progress, [0.05, 0.26, 0.74, 0.94], [0, 1, 1, 0]);
-          const figureScale = useTransform(progress, [0.05, 0.32], [0.9, 1]);
-          const figureY = useTransform(progress, [0, 0.32, 0.74, 0.94], [70, 0, 0, -70]);
+          const headOpacity = useTransform(progress, [0, 0.12, 0.64, 0.85], [0, 1, 1, 0]);
+          const headY = useTransform(progress, [0, 0.12, 0.64, 0.85], [44, 0, 0, -90]);
+          const headScale = useTransform(progress, [0, 0.5], [1, 1.05]);
+          const marqueeOpacity = useTransform(progress, [0.05, 0.26, 0.7, 0.9], [0, 1, 1, 0]);
+          const marqueeY = useTransform(progress, [0, 0.26, 0.7, 0.9], [90, 0, 0, -64]);
           const scrollCueOpacity = useTransform(progress, [0, 0.16, 0.28], [1, 0.5, 0]);
           return (
             <>
-              <div className="rf-hero-grid">
-                <motion.div className="rf-hero-copy" style={{ opacity: textOpacity, y: textY }}>
-                  <span className="rf-kicker rf-hero-kicker">Born on a Florida muni · Made in the USA</span>
-                  <h1>
-                    Golf Socks
-                    <br />
-                    Can Win
-                  </h1>
-                  <FillText className="rf-hero-fill" progress={progress} start={0.1} end={0.46}>
-                    Golf is bigger, younger, more social, and more commercially fragmented than ever. Del Campo can turn the most overlooked thing every golfer already wears into a brand golf actually talks about.
-                  </FillText>
-                </motion.div>
+              <motion.div className="rf-hero-head" style={{ opacity: headOpacity, y: headY, scale: headScale }}>
+                <span className="rf-kicker">Born on a Florida muni · Made in the USA</span>
+                <h1>
+                  Golf Socks
+                  <br />
+                  <span className="rf-hero-accent">Can Win.</span>
+                </h1>
+                <FillText className="rf-hero-fill" progress={progress} start={0.1} end={0.44}>
+                  Golf is bigger, younger, more social, and more commercially fragmented than ever. Del Campo can turn the most overlooked thing every golfer already wears into a brand golf actually talks about.
+                </FillText>
+              </motion.div>
 
-                {/* TODO: swap for a hero-grade product or Florida lifestyle shot */}
-                <motion.div className="rf-hero-figure" style={{ opacity: figureOpacity, scale: figureScale, y: figureY }}>
-                  <img alt={productImages[0].name} src={productImages[0].src} />
-                  <span className="rf-hero-tag">The Great Golf Sock Renaissance</span>
-                </motion.div>
-              </div>
+              {/* WOW element: dual rows of real product streaming in opposite directions */}
+              <motion.div className="rf-hero-marquee" style={{ opacity: marqueeOpacity, y: marqueeY }} aria-hidden>
+                <div className="rf-marquee-row rf-marquee-row--a">
+                  {marqueeSocks.concat(marqueeSocks).map((img, i) => (
+                    <div className="rf-sock" key={`a-${i}`}>
+                      <img alt="" src={img.src} />
+                    </div>
+                  ))}
+                </div>
+                <div className="rf-marquee-row rf-marquee-row--b">
+                  {marqueeSocks.concat(marqueeSocks).map((img, i) => (
+                    <div className="rf-sock" key={`b-${i}`}>
+                      <img alt="" src={img.src} />
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
 
               <motion.a className="rf-scroll" href="#state" aria-label="Scroll to next section" style={{ opacity: scrollCueOpacity }}>
                 <ChevronDown />
