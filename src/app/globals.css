@@ -406,6 +406,7 @@ html {
   --rf-on-surface: #0a2419;
   --rf-green: #155a3a;
   --rf-lime: #4fb477;
+  --rf-neon: #4ade2f;
   --rf-gold: #e8b13d;
   --rf-teal: #2aa6a0;
   --rf-coral: #f0623a;
@@ -436,6 +437,7 @@ html {
   --rf-surface: #14130d;
   --rf-on-surface: #fbf7ec;
   --rf-green: #155a39;
+  --rf-neon: #16b91b;
   --rf-accent: var(--rf-green);
 }
 
@@ -677,7 +679,7 @@ html {
 }
 
 .rf-hero-accent {
-  color: var(--rf-accent);
+  color: var(--rf-neon);
 }
 
 .rf-hero-fill {
@@ -903,7 +905,7 @@ html {
 }
 
 .rf-fly-pointer::before {
-  background: linear-gradient(180deg, var(--rf-gold), transparent);
+  background: linear-gradient(180deg, var(--rf-neon), transparent);
   border-radius: 2px;
   content: "";
   inset: 0;
@@ -1128,9 +1130,10 @@ html {
 
 .rf-cta {
   align-items: center;
-  background: var(--rf-gold);
+  background: var(--rf-neon);
   border-radius: 999px;
-  color: #0a2419;
+  box-shadow: 0 12px 34px rgba(74, 222, 47, 0.32);
+  color: #08230f;
   display: inline-flex;
   font-size: 0.95rem;
   font-weight: 950;

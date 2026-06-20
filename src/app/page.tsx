@@ -177,7 +177,7 @@ function StatBlock({
 }
 
 const stats = [
-  { value: "48.1M", label: "Americans played golf on-course or off-course in 2025.", bar: "72%", accent: "var(--rf-lime)" },
+  { value: "48.1M", label: "Americans played golf on-course or off-course in 2025.", bar: "72%", accent: "var(--rf-neon)" },
   { value: "29.1M", label: "People played traditional on-course golf.", bar: "52%", accent: "var(--rf-gold)" },
   { value: "19M", label: "People only played off-course golf: ranges, simulators, and entertainment venues.", bar: "42%", accent: "var(--rf-teal)" },
   { value: "8.1M", label: "Women and girls played on-course golf, matching a record share.", bar: "34%", accent: "var(--rf-coral)" }
@@ -204,7 +204,7 @@ const flywheel = [
     action: "Score 25 caddie, creator, and pro-shop prospects by fit, reach, and revenue potential.",
     modules: "Relationship CRM · Distribution Pipeline",
     metric: "Qualified prospects added / week",
-    accent: "var(--rf-teal)"
+    accent: "var(--rf-neon)"
   },
   {
     label: "Activate",
@@ -228,7 +228,7 @@ const flywheel = [
     action: "Route a corporate outing into a custom sock proposal with order value and next step.",
     modules: "Campaign Builder · Distribution · Performance",
     metric: "Revenue & orders closed",
-    accent: "var(--rf-lime)"
+    accent: "var(--rf-neon)"
   },
   {
     label: "Recycle",
