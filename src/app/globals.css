@@ -425,17 +425,17 @@ html {
   position: relative;
 }
 
-/* Daylight — bright black-on-white Florida scorecard scheme (Option 2) */
+/* Daylight — Del Campo's black-on-white classic (Option 2, default) */
 .rf-page.rf-day {
-  --rf-bg: #f5f0e2;
+  --rf-bg: #f7f3ea;
   --rf-bg-2: #ffffff;
-  --rf-cream: #16150f;
-  --rf-muted: rgba(22, 21, 15, 0.66);
-  --rf-line: rgba(22, 21, 15, 0.16);
-  --rf-panel: rgba(255, 255, 255, 0.72);
-  --rf-surface: #15412c;
+  --rf-cream: #14130d;
+  --rf-muted: rgba(20, 19, 13, 0.64);
+  --rf-line: rgba(20, 19, 13, 0.14);
+  --rf-panel: rgba(255, 255, 255, 0.94);
+  --rf-surface: #14130d;
   --rf-on-surface: #fbf7ec;
-  --rf-green: #15412c;
+  --rf-green: #155a39;
   --rf-accent: var(--rf-green);
 }
 
@@ -457,11 +457,10 @@ html {
 
 .rf-day .rf-backdrop {
   background:
-    radial-gradient(circle at 14% 14%, rgba(42, 166, 160, 0.18), transparent 32%),
-    radial-gradient(circle at 86% 12%, rgba(232, 177, 61, 0.22), transparent 32%),
-    radial-gradient(circle at 80% 90%, rgba(240, 98, 58, 0.14), transparent 36%),
-    radial-gradient(circle at 50% 98%, rgba(21, 90, 58, 0.16), transparent 44%),
-    linear-gradient(180deg, #fbf7ee, #f1ead9);
+    radial-gradient(circle at 12% 12%, rgba(42, 166, 160, 0.1), transparent 30%),
+    radial-gradient(circle at 88% 10%, rgba(232, 177, 61, 0.12), transparent 30%),
+    radial-gradient(circle at 82% 92%, rgba(240, 98, 58, 0.08), transparent 34%),
+    linear-gradient(180deg, #ffffff, #f4eedf);
 }
 
 /* Theme toggle (temporary compare control) */
@@ -654,7 +653,7 @@ html {
 }
 
 .rf-kicker {
-  color: var(--rf-gold);
+  color: var(--rf-accent);
   display: inline-block;
   font-size: 0.82rem;
   font-weight: 900;
@@ -724,7 +723,9 @@ html {
 .rf-sock {
   aspect-ratio: 5 / 4;
   background: #fbf7ec;
+  border: 1px solid var(--rf-line);
   border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
   flex: 0 0 auto;
   overflow: hidden;
   width: clamp(150px, 17vw, 230px);
@@ -982,6 +983,7 @@ html {
   border: 1px solid var(--rf-line);
   border-left-width: 4px;
   border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
   padding: clamp(20px, 3vw, 32px);
   transition: border-color 0.3s ease;
 }

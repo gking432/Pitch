@@ -336,7 +336,7 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
 }
 
 export default function Home() {
-  const [theme, setTheme] = useState<"dusk" | "day">("dusk");
+  const [theme, setTheme] = useState<"dusk" | "day">("day");
   return (
     <main className={`rf-page ${theme === "day" ? "rf-day" : ""}`}>
       <div className="rf-backdrop" aria-hidden />
