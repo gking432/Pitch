@@ -142,7 +142,7 @@ function FillWord({
   const color = useTransform(
     progress,
     [wordStart, wordStart + step * 2.2],
-    ["rgba(251, 247, 236, 0.26)", "rgba(251, 247, 236, 1)"]
+    ["rgba(17, 19, 13, 0.22)", "rgba(17, 19, 13, 1)"]
   );
   return <motion.span style={{ color }}>{word}</motion.span>;
 }
@@ -336,19 +336,9 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
 }
 
 export default function Home() {
-  const [theme, setTheme] = useState<"dusk" | "day">("day");
   return (
-    <main className={`rf-page ${theme === "day" ? "rf-day" : ""}`}>
+    <main className="rf-page">
       <div className="rf-backdrop" aria-hidden />
-
-      <div className="rf-theme-toggle" role="group" aria-label="Color theme">
-        <button className={theme === "dusk" ? "is-on" : ""} onClick={() => setTheme("dusk")} type="button">
-          Dusk
-        </button>
-        <button className={theme === "day" ? "is-on" : ""} onClick={() => setTheme("day")} type="button">
-          Daylight
-        </button>
-      </div>
 
       <div className="rf-official">
         <span className="rf-flag">FL</span>

@@ -395,22 +395,21 @@ html {
 }
 
 .rf-page {
-  /* Del Campo — dark fairway-green, Florida-at-dusk palette (Dusk) */
-  --rf-bg: #0a2419;
-  --rf-bg-2: #0e3326;
-  --rf-cream: #fbf7ec;
-  --rf-muted: rgba(251, 247, 236, 0.72);
-  --rf-line: rgba(251, 247, 236, 0.16);
-  --rf-panel: rgba(10, 36, 25, 0.55);
-  --rf-surface: #fbf7ec;
-  --rf-on-surface: #0a2419;
-  --rf-green: #155a3a;
-  --rf-lime: #4fb477;
-  --rf-neon: #4ade2f;
+  /* Del Campo — Made in the USA: white paper, ink black, neon grass green */
+  --rf-bg: #fcfbf6;
+  --rf-bg-2: #ffffff;
+  --rf-cream: #12130d;
+  --rf-muted: rgba(18, 19, 13, 0.6);
+  --rf-line: rgba(18, 19, 13, 0.14);
+  --rf-panel: #ffffff;
+  --rf-surface: #12130d;
+  --rf-on-surface: #f4f7ee;
+  --rf-green: #0c6b2e;
+  --rf-neon: #2fcf2a;
   --rf-gold: #e8b13d;
   --rf-teal: #2aa6a0;
   --rf-coral: #f0623a;
-  --rf-accent: var(--rf-gold);
+  --rf-accent: var(--rf-neon);
   background: var(--rf-bg);
   color: var(--rf-cream);
   font-family:
@@ -426,75 +425,19 @@ html {
   position: relative;
 }
 
-/* Daylight — Del Campo's black-on-white classic (Option 2, default) */
-.rf-page.rf-day {
-  --rf-bg: #f7f3ea;
-  --rf-bg-2: #ffffff;
-  --rf-cream: #14130d;
-  --rf-muted: rgba(20, 19, 13, 0.64);
-  --rf-line: rgba(20, 19, 13, 0.14);
-  --rf-panel: rgba(255, 255, 255, 0.94);
-  --rf-surface: #14130d;
-  --rf-on-surface: #fbf7ec;
-  --rf-green: #155a39;
-  --rf-neon: #16b91b;
-  --rf-accent: var(--rf-green);
-}
-
 /*
- * Stagnant background: a single fixed layer that never scrolls, so the page
- * "holds still" while only the content in each pinned scene moves.
+ * Stagnant background: a single fixed layer that never scrolls. Clean white
+ * paper with faint Florida-green/sun hints so it reads like the Del Campo site.
  */
 .rf-backdrop {
   background:
-    radial-gradient(circle at 14% 16%, rgba(42, 166, 160, 0.28), transparent 34%),
-    radial-gradient(circle at 86% 14%, rgba(232, 177, 61, 0.22), transparent 34%),
-    radial-gradient(circle at 78% 88%, rgba(240, 98, 58, 0.2), transparent 38%),
-    radial-gradient(circle at 50% 96%, rgba(21, 90, 58, 0.55), transparent 46%),
-    linear-gradient(180deg, var(--rf-bg-2), var(--rf-bg));
+    radial-gradient(circle at 12% 12%, rgba(47, 207, 42, 0.08), transparent 30%),
+    radial-gradient(circle at 88% 10%, rgba(232, 177, 61, 0.08), transparent 30%),
+    radial-gradient(circle at 84% 90%, rgba(47, 207, 42, 0.06), transparent 34%),
+    linear-gradient(180deg, #ffffff, var(--rf-bg));
   inset: 0;
   position: fixed;
   z-index: 0;
-}
-
-.rf-day .rf-backdrop {
-  background:
-    radial-gradient(circle at 12% 12%, rgba(42, 166, 160, 0.1), transparent 30%),
-    radial-gradient(circle at 88% 10%, rgba(232, 177, 61, 0.12), transparent 30%),
-    radial-gradient(circle at 82% 92%, rgba(240, 98, 58, 0.08), transparent 34%),
-    linear-gradient(180deg, #ffffff, #f4eedf);
-}
-
-/* Theme toggle (temporary compare control) */
-.rf-theme-toggle {
-  background: var(--rf-panel);
-  border: 1px solid var(--rf-line);
-  border-radius: 999px;
-  bottom: 18px;
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  position: fixed;
-  right: 18px;
-  z-index: 50;
-  backdrop-filter: blur(8px);
-}
-
-.rf-theme-toggle button {
-  background: transparent;
-  border: 0;
-  border-radius: 999px;
-  color: var(--rf-cream);
-  font-size: 0.72rem;
-  font-weight: 850;
-  letter-spacing: 0.06em;
-  padding: 7px 14px;
-  text-transform: uppercase;
-}
-
-.rf-theme-toggle button.is-on {
-  background: var(--rf-accent);
-  color: var(--rf-on-surface);
 }
 
 .rf-page > *:not(.rf-backdrop) {
@@ -504,22 +447,23 @@ html {
 
 .rf-official {
   align-items: center;
-  border-bottom: 1px solid var(--rf-line);
-  color: var(--rf-cream);
+  background: #12130d;
+  color: #f4f7ee;
   display: flex;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.72rem;
+  font-weight: 700;
   gap: 10px;
   justify-content: center;
   letter-spacing: 0.08em;
-  min-height: 42px;
+  min-height: 40px;
   text-transform: uppercase;
 }
 
 .rf-flag {
-  background: var(--rf-surface);
+  background: var(--rf-neon);
   border-radius: 3px;
-  color: var(--rf-on-surface);
+  color: #08230f;
   font-family: Inter, sans-serif;
   font-size: 0.66rem;
   font-weight: 950;
@@ -655,13 +599,23 @@ html {
 }
 
 .rf-kicker {
-  color: var(--rf-accent);
-  display: inline-block;
-  font-size: 0.82rem;
+  align-items: center;
+  color: var(--rf-green);
+  display: inline-flex;
+  font-size: 0.8rem;
   font-weight: 900;
-  letter-spacing: 0.14em;
+  gap: 9px;
+  letter-spacing: 0.16em;
   margin-bottom: 16px;
   text-transform: uppercase;
+}
+
+.rf-kicker::before {
+  background: var(--rf-neon);
+  border-radius: 2px;
+  content: "";
+  height: 10px;
+  width: 10px;
 }
 
 /* Bold centered hero with a dual-row streaming product marquee */
@@ -915,9 +869,10 @@ html {
 
 .rf-fly-hub {
   align-items: center;
-  background: var(--rf-surface);
+  background: var(--rf-neon);
   border-radius: 50%;
-  color: var(--rf-on-surface);
+  box-shadow: 0 14px 40px rgba(47, 207, 42, 0.35);
+  color: #08230f;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -938,9 +893,8 @@ html {
 }
 
 .rf-fly-hub span {
-  color: var(--rf-on-surface);
+  color: rgba(8, 35, 15, 0.75);
   font-size: clamp(0.52rem, 0.85vw, 0.72rem);
-  opacity: 0.7;
   font-weight: 700;
   line-height: 1.1;
 }
@@ -1109,7 +1063,7 @@ html {
 }
 
 .rf-campaign span {
-  color: var(--rf-gold);
+  color: var(--rf-green);
   font-size: 1.2rem;
   font-weight: 950;
 }
