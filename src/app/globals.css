@@ -402,10 +402,7 @@ html {
   --rf-red: #e20505;
   --rf-green: #0f4b2f;
   --rf-gold: #d2a443;
-  background:
-    radial-gradient(circle at 10% 20%, rgba(18, 74, 45, 0.45), transparent 28%),
-    radial-gradient(circle at 92% 18%, rgba(113, 0, 0, 0.5), transparent 30%),
-    var(--rf-bg);
+  background: var(--rf-bg);
   color: var(--rf-cream);
   font-family:
     Inter,
@@ -417,6 +414,27 @@ html {
     sans-serif;
   min-height: 100vh;
   overflow-x: clip;
+  position: relative;
+}
+
+/*
+ * Stagnant background: a single fixed layer that never scrolls, so the page
+ * "holds still" while only the content in each pinned scene moves.
+ */
+.rf-backdrop {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(18, 74, 45, 0.5), transparent 34%),
+    radial-gradient(circle at 88% 14%, rgba(113, 0, 0, 0.45), transparent 34%),
+    radial-gradient(circle at 50% 92%, rgba(18, 74, 45, 0.35), transparent 42%),
+    var(--rf-bg);
+  inset: 0;
+  position: fixed;
+  z-index: 0;
+}
+
+.rf-page > *:not(.rf-backdrop) {
+  position: relative;
+  z-index: 1;
 }
 
 .rf-official {
@@ -489,12 +507,7 @@ html {
 }
 
 .rf-scene {
-  min-height: 190vh;
   position: relative;
-}
-
-.rf-scene.rf-hero {
-  min-height: 220vh;
 }
 
 .rf-sticky {
@@ -507,7 +520,15 @@ html {
   padding: 54px 28px;
   position: sticky;
   top: 0;
-  will-change: opacity, transform;
+}
+
+.rf-body {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  will-change: opacity, transform, filter;
 }
 
 .rf-hero {
@@ -668,12 +689,6 @@ html {
   transform: translateX(-50%);
 }
 
-.rf-state {
-  background:
-    radial-gradient(circle at 50% -10%, rgba(226, 5, 5, 0.18), transparent 34%),
-    var(--rf-bg);
-}
-
 .rf-stat-grid {
   align-items: end;
   display: grid;
@@ -724,11 +739,6 @@ html {
   text-transform: uppercase;
 }
 
-.rf-gap {
-  background: var(--rf-bg-2);
-  overflow: hidden;
-}
-
 .rf-split-copy {
   max-width: 1180px;
   width: 100%;
@@ -757,10 +767,6 @@ html {
   white-space: nowrap;
 }
 
-.rf-why {
-  background: var(--rf-bg);
-}
-
 .rf-token-field {
   display: flex;
   flex-wrap: wrap;
@@ -778,12 +784,6 @@ html {
   font-weight: 950;
   letter-spacing: -0.04em;
   padding: 15px 22px;
-}
-
-.rf-growth {
-  background:
-    radial-gradient(circle at 50% 45%, rgba(15, 75, 47, 0.8), transparent 48%),
-    var(--rf-bg);
 }
 
 .rf-pyramid {
@@ -833,10 +833,6 @@ html {
   width: 100%;
 }
 
-.rf-campaigns {
-  background: var(--rf-bg-2);
-}
-
 .rf-campaign-stack {
   display: grid;
   gap: 12px;
@@ -873,12 +869,6 @@ html {
   line-height: 1.16;
   margin: 0;
   text-align: left;
-}
-
-.rf-final {
-  background:
-    radial-gradient(circle at 20% 75%, rgba(226, 5, 5, 0.28), transparent 34%),
-    var(--rf-bg);
 }
 
 .rf-cta {
