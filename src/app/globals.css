@@ -1839,6 +1839,117 @@ html {
   text-align: left;
 }
 
+/* ============================================================ */
+/* Pillar scenes + top progress timeline                        */
+/* ============================================================ */
+.rf-pillar .rf-sticky {
+  justify-content: flex-start;
+}
+
+.rf-pillar-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0 auto;
+  max-width: 1040px;
+  width: 100%;
+}
+
+.rf-pillar-doc {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+.rf-pillar-doc > .rf-doc--fill {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  min-height: 0;
+}
+
+.rf-doc--fill {
+  height: 100%;
+}
+
+/* The stepper */
+.rf-timeline {
+  display: flex;
+  margin: 0 auto clamp(20px, 4vh, 44px);
+  max-width: 720px;
+  padding-top: clamp(8px, 2vh, 20px);
+  width: 100%;
+}
+
+.rf-tl-node {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  position: relative;
+}
+
+.rf-tl-line-base,
+.rf-tl-line {
+  height: 3px;
+  left: -50%;
+  position: absolute;
+  top: 11.5px;
+  width: 100%;
+}
+
+.rf-tl-line-base {
+  background: var(--rf-line);
+}
+
+.rf-tl-line {
+  background: #0b1f10;
+  transform-origin: left center;
+}
+
+.rf-tl-circle {
+  background: var(--rf-panel);
+  border: 2px solid var(--rf-line);
+  border-radius: 50%;
+  height: 26px;
+  position: relative;
+  width: 26px;
+  z-index: 1;
+}
+
+.rf-tl-fill {
+  background: var(--rf-neon);
+  border: 3px solid #0b1f10;
+  border-radius: 50%;
+  inset: -2px;
+  position: absolute;
+}
+
+.rf-tl-label {
+  color: var(--rf-muted);
+  font-size: clamp(0.6rem, 1vw, 0.74rem);
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  margin-top: 9px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.rf-tl-label.is-active {
+  color: var(--rf-cream);
+}
+
+/* Engine bubbles a touch bolder than the old token chips */
+.rf-engine-bubbles {
+  margin-top: clamp(10px, 2vh, 22px);
+}
+
+.rf-engine-bubbles .rf-token {
+  font-size: clamp(1.05rem, 1.7vw, 1.5rem);
+  padding: 14px 24px;
+}
+
 /* Image placeholders (legacy, unused) */
 .rf-slot {
   align-items: center;

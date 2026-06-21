@@ -159,18 +159,7 @@ const stats = [
   { value: "8.1M", label: "Women and girls played on-course golf, matching a record share.", bar: "34%", accent: "var(--rf-coral)" }
 ];
 
-const tokens = [
-  "DTC demand",
-  "Custom club socks",
-  "Pro shops",
-  "Member-guests",
-  "Wholesale / retail",
-  "College drops",
-  "Caddies + PGA pros",
-  "Course visits",
-  "Editorial content",
-  "Creative + AI ops"
-];
+const PILLARS = ["Events", "Green Grass", "Ambassadors", "Content", "Retail"];
 
 const memberGuestPlay = [
   "Identify premium clubs with upcoming member-guests.",
@@ -178,7 +167,6 @@ const memberGuestPlay = [
   "Offer custom club-logo socks for every participant.",
   "Treat the first batch as seeding spend.",
   "Club logo outside, Del Campo wordmark on the inside foot.",
-  "Give every player a pair.",
   "Follow up with the pro shop after the event.",
   "Convert into reorders, core placement, and future event orders."
 ];
@@ -211,23 +199,22 @@ const formats = [
   ["The Best Tee Gift in Golf", "Member-guests, corporate outings, tournament gifting."]
 ];
 
-const caddiePlay = [
-  "Identify respected caddies.",
-  "Seed smiley socks and premium core styles.",
-  "Offer subtle custom hats where it fits.",
-  "Build “On the Bag” content around their stories.",
-  "Use visibility as proof, not gimmick.",
-  "Recycle the best clips into social, email, and pro shop."
-];
-
 const collegePlays = [
   "Rivalry match videos.",
   "Alumni golf weekends.",
   "Campus-color sock drops.",
   "College golfer seeding.",
   "Rivalry-weekend trip packs.",
-  "Winner-gets-the-socks formats.",
   "College-themed content series."
+];
+
+const retailList = [
+  "Direct-to-consumer drops.",
+  "Wholesale & specialty retail.",
+  "Big-box distribution.",
+  "PGA TOUR Fan Shop.",
+  "Licensed categories.",
+  "Custom & corporate orders."
 ];
 
 const plays = [
@@ -260,7 +247,7 @@ const flywheel = [
   { label: "Expand", copy: "Use every win to open the next relationship, account, or channel.", accent: "var(--rf-teal)" }
 ];
 
-/* Falling background shapes for the wedge intro. */
+/* Falling background shapes for the events intro. */
 const dropShapes = [
   { x: 14, y: 24, size: 150, color: "var(--rf-neon)" },
   { x: 78, y: 18, size: 110, color: "var(--rf-gold)" },
@@ -339,71 +326,6 @@ function DropShape({
   );
 }
 
-/* Marketing-engine network: nucleus + connected token nodes. */
-function MarketingNetwork({ progress }: { progress: MotionValue<number> }) {
-  const n = tokens.length;
-  const radius = 37;
-  const nodes = tokens.map((label, i) => {
-    const ang = (i / n) * Math.PI * 2 - Math.PI / 2;
-    return { label, x: 50 + radius * Math.cos(ang), y: 50 + radius * Math.sin(ang) };
-  });
-
-  return (
-    <div className="rf-net">
-      <svg className="rf-net-lines" preserveAspectRatio="none" viewBox="0 0 100 100">
-        {nodes.map((node, i) => (
-          <NetLine index={i} key={i} node={node} progress={progress} />
-        ))}
-      </svg>
-
-      <NetNucleus progress={progress} />
-
-      {nodes.map((node, i) => (
-        <NetNode index={i} key={i} node={node} progress={progress} />
-      ))}
-    </div>
-  );
-}
-
-function NetLine({ node, index, progress }: { node: { x: number; y: number }; index: number; progress: MotionValue<number> }) {
-  const s = 0.24 + index * 0.03;
-  const pathLength = useTransform(progress, [s, s + 0.1], [0, 1]);
-  const opacity = useTransform(progress, [s, s + 0.06, 0.86, 0.96], [0, 0.5, 0.5, 0]);
-  return (
-    <motion.line
-      stroke="var(--rf-neon)"
-      strokeWidth={0.4}
-      style={{ pathLength, opacity }}
-      x1={50}
-      x2={node.x}
-      y1={50}
-      y2={node.y}
-    />
-  );
-}
-
-function NetNucleus({ progress }: { progress: MotionValue<number> }) {
-  const opacity = useTransform(progress, [0.12, 0.22, 0.86, 0.96], [0, 1, 1, 0]);
-  const scale = useTransform(progress, [0.12, 0.24], [0.6, 1]);
-  return (
-    <motion.div className="rf-net-core" style={{ opacity, scale }}>
-      <span>Marketing</span>
-      <strong>Engine</strong>
-    </motion.div>
-  );
-}
-
-function NetNode({ node, index, progress }: { node: { x: number; y: number; label: string }; index: number; progress: MotionValue<number> }) {
-  const s = 0.26 + index * 0.03;
-  const opacity = useTransform(progress, [s, s + 0.07, 0.86, 0.96], [0, 1, 1, 0]);
-  const scale = useTransform(progress, [s, s + 0.07], [0.5, 1]);
-  return (
-    <motion.span className="rf-net-node" style={{ left: `${node.x}%`, top: `${node.y}%`, opacity, scale }}>
-      {node.label}
-    </motion.span>
-  );
-}
-
 /* Graphic roadmap for "The Play" — connected milestone path. */
 function Roadmap({ steps, progress, from, to }: { steps: string[]; progress: MotionValue<number>; from: number; to: number }) {
   const seg = (to - from) / steps.length;
@@ -425,6 +347,112 @@ function RoadStep({ step, index, progress, s }: { step: string; index: number; p
       <span className="rf-road-dot">{String(index + 1).padStart(2, "0")}</span>
       <p>{step}</p>
     </motion.li>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pillar timeline + scene                                             */
+/* Sticky stepper across the top of the 5 engine sections. Empty circles*/
+/* fill green with a bold black ring + line, in order, as you arrive.   */
+/* ------------------------------------------------------------------ */
+
+function TimelineNode({
+  i,
+  index,
+  animate,
+  progress
+}: {
+  i: number;
+  index: number;
+  animate: boolean;
+  progress: MotionValue<number>;
+}) {
+  // fill: 1 when this node is reached, 0 otherwise.
+  const driven = i === index && animate;
+  const inA = driven ? 0.05 : 0;
+  const inB = driven ? 0.24 : 0.0001;
+  const v0 = i < index || (i === index && !animate) ? 1 : 0;
+  const v1 = i <= index ? 1 : 0;
+  const fill = useTransform(progress, [inA, inB], [v0, v1]);
+
+  return (
+    <div className="rf-tl-node">
+      {i > 0 && (
+        <>
+          <span className="rf-tl-line-base" />
+          <motion.span className="rf-tl-line" style={{ scaleX: fill }} />
+        </>
+      )}
+      <div className="rf-tl-circle">
+        <motion.span className="rf-tl-fill" style={{ opacity: fill, scale: fill }} />
+      </div>
+      <span className={`rf-tl-label ${i === index ? "is-active" : ""}`}>{PILLARS[i]}</span>
+    </div>
+  );
+}
+
+function PillarTimeline({ index, animate, progress }: { index: number; animate: boolean; progress: MotionValue<number> }) {
+  const opacity = useTransform(progress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]);
+  return (
+    <motion.div className="rf-timeline" style={{ opacity }} aria-hidden>
+      {PILLARS.map((_, i) => (
+        <TimelineNode animate={animate} i={i} index={index} key={i} progress={progress} />
+      ))}
+    </motion.div>
+  );
+}
+
+function PillarScene({
+  id,
+  className = "",
+  index,
+  animate = true,
+  height = 1.8,
+  children
+}: {
+  id?: string;
+  className?: string;
+  index: number;
+  animate?: boolean;
+  height?: number;
+  children: (progress: MotionValue<number>) => React.ReactNode;
+}) {
+  return (
+    <ScrollScene className={`rf-pillar ${className}`} height={height} id={id}>
+      {(progress) => (
+        <div className="rf-pillar-wrap">
+          <PillarTimeline animate={animate} index={index} progress={progress} />
+          <div className="rf-pillar-doc">{children(progress)}</div>
+        </div>
+      )}
+    </ScrollScene>
+  );
+}
+
+/* A standard pillar body: heading + staggered blocks. */
+function PillarDoc({
+  progress,
+  kicker,
+  heading,
+  blocks
+}: {
+  progress: MotionValue<number>;
+  kicker: React.ReactNode;
+  heading: React.ReactNode;
+  blocks: React.ReactNode[];
+}) {
+  return (
+    <div className="rf-doc">
+      <Reveal className="rf-doc-head" index={0} progress={progress}>
+        <Kicker>{kicker}</Kicker>
+        <h2>{heading}</h2>
+      </Reveal>
+      {blocks.map((block, i) => (
+        <Reveal className="rf-doc-block" index={i + 1} key={i} progress={progress}>
+          {block}
+        </Reveal>
+      ))}
+    </div>
   );
 }
 
@@ -580,19 +608,6 @@ export default function Home() {
         ]}
       />
 
-      {/* 4b — Marketing engine network */}
-      <ScrollScene className="rf-net-scene" height={2.1} id="engine-view">
-        {(progress) => (
-          <div className="rf-doc rf-net-doc">
-            <Reveal className="rf-doc-head rf-net-head" index={0} progress={progress}>
-              <Kicker>One System</Kicker>
-              <h2>Every asset plugs into one engine.</h2>
-            </Reveal>
-            <MarketingNetwork progress={progress} />
-          </div>
-        )}
-      </ScrollScene>
-
       {/* 5 — The Position */}
       <DocScene
         id="position"
@@ -622,16 +637,35 @@ export default function Home() {
         )}
       </ScrollScene>
 
-      {/* 6 — The Member-Guest Wedge (intro w/ falling socks → roadmap) */}
-      <ScrollScene className="rf-wedge" height={2.8} id="wedge">
+      {/* 6 — The Marketing Engine (bubbles) */}
+      <DocScene
+        className="rf-engine"
+        height={1.7}
+        id="engine-view"
+        kicker="The Marketing Engine"
+        heading="One engine. Five ways in."
+        blocks={[
+          <p key="a">Every channel feeds the same machine. Events seed the brand. Green grass sells it. Ambassadors prove it. Content spreads it. Retail scales it.</p>,
+          <div className="rf-token-field rf-engine-bubbles" key="b">
+            {PILLARS.map((item) => (
+              <span className="rf-token" key={item}>
+                {item}
+              </span>
+            ))}
+          </div>
+        ]}
+      />
+
+      {/* 7 — Pillar 01: Events (falling socks → roadmap) */}
+      <PillarScene className="rf-events" height={2.9} id="events" index={0}>
         {(progress) => (
-          <div className="rf-doc rf-wedge-doc">
+          <div className="rf-doc rf-doc--fill">
             <Reveal className="rf-doc-head" hold={0.92} index={0} progress={progress}>
-              <Kicker>The Wedge</Kicker>
-              <h2>Start where serious golf already talks.</h2>
+              <Kicker>01 · Events</Kicker>
+              <h2>Events are the way in.</h2>
             </Reveal>
             <div className="rf-stage">
-              <Beat progress={progress} win={[0.08, 0.18, 0.42, 0.5]}>
+              <Beat progress={progress} win={[0.1, 0.2, 0.42, 0.5]}>
                 <div className="rf-drops" aria-hidden>
                   {dropShapes.map((shape, i) => (
                     <DropShape {...shape} index={i} key={i} progress={progress} />
@@ -642,7 +676,10 @@ export default function Home() {
                     The member-guest is one of the most valuable rooms in golf: members, guests, business owners, competitive amateurs, and people who
                     notice what everyone else is wearing.
                   </p>
-                  <p className="rf-lead">That makes it the perfect wedge for Del Campo.</p>
+                  <p className="rf-lead">
+                    Custom socks at premium events are the wedge — a bridge into the pro shop and a way to get great players into the brand. Tournaments and
+                    corporate outings work the same way.
+                  </p>
                 </div>
               </Beat>
               <Beat progress={progress} win={[0.5, 0.6, 0.9, 0.98]}>
@@ -653,9 +690,113 @@ export default function Home() {
             </div>
           </div>
         )}
-      </ScrollScene>
+      </PillarScene>
 
-      {/* 7 — Brand Memory */}
+      {/* 8 — Pillar 02: Green Grass */}
+      <PillarScene className="rf-greengrass" id="greengrass" index={1}>
+        {(progress) => (
+          <PillarDoc
+            heading="The pro shop is the showroom."
+            kicker="02 · Green Grass"
+            progress={progress}
+            blocks={[
+              <p key="a">Del Campo belongs where golfers already browse before and after a round. The goal is not just to get socks into pro shops — it is to make Del Campo the premium sock standard inside them.</p>,
+              <div className="rf-checklist" key="b">
+                {proShopList.map((item) => (
+                  <span className="rf-check" key={item}>
+                    {item}
+                  </span>
+                ))}
+              </div>,
+              <p className="rf-keyline" key="c">If the socks look like an afterthought, they sell like one. Del Campo should own the presentation.</p>
+            ]}
+          />
+        )}
+      </PillarScene>
+
+      {/* 9 — Pillar 03a: Ambassadors / Caddies */}
+      <PillarScene className="rf-ambassadors" id="ambassadors" index={2}>
+        {(progress) => (
+          <PillarDoc
+            heading="Players wear pants. Caddies wear shorts."
+            kicker="03 · Ambassadors"
+            progress={progress}
+            blocks={[
+              <p className="rf-lead" key="a">The best sock visibility in golf may not be on the players at all. Caddies are on the bag, in shorts, in front of cameras every weekend.</p>,
+              <p key="b">A few respected caddies in recognizable Del Campo socks on Sunday afternoon can create more brand memory than a wall of cheap influencer posts. Seed the loopers, then build “On the Bag” stories around them.</p>,
+              <p className="rf-keyline" key="c">Caddies are not vanity influencers. They are culture carriers.</p>
+            ]}
+          />
+        )}
+      </PillarScene>
+
+      {/* 9b — Pillar 03b: Ambassadors / College (same node) */}
+      <PillarScene animate={false} className="rf-ambassadors" id="college" index={2}>
+        {(progress) => (
+          <PillarDoc
+            heading="College rivalry golf keeps it young."
+            kicker="03 · Ambassadors"
+            progress={progress}
+            blocks={[
+              <p className="rf-lead" key="a">The same ambassador playbook runs on campus — young and tasteful, not a circus.</p>,
+              <div className="rf-checklist" key="b">
+                {collegePlays.map((item) => (
+                  <span className="rf-check" key={item}>
+                    {item}
+                  </span>
+                ))}
+              </div>,
+              <p className="rf-keyline" key="c">This is where Del Campo can be young without becoming unserious.</p>
+            ]}
+          />
+        )}
+      </PillarScene>
+
+      {/* 10 — Pillar 04: Content */}
+      <PillarScene className="rf-content" height={1.9} id="content" index={3}>
+        {(progress) => (
+          <PillarDoc
+            heading="A classy golf channel, not a bro content house."
+            kicker="04 · Content"
+            progress={progress}
+            blocks={[
+              <p key="a">Del Campo does not need to become Good Good. The opportunity is a premium, editorial, golf-native layer — one host, one point of view, repeatable formats — that makes Del Campo present inside the culture without cheapening it.</p>,
+              <div className="rf-formats" key="b">
+                {formats.map(([title, body]) => (
+                  <div className="rf-format" key={title}>
+                    <strong>{title}</strong>
+                    <p>{body}</p>
+                  </div>
+                ))}
+              </div>
+            ]}
+          />
+        )}
+      </PillarScene>
+
+      {/* 11 — Pillar 05: Retail */}
+      <PillarScene className="rf-retail" id="retail" index={4}>
+        {(progress) => (
+          <PillarDoc
+            heading="Retail scales what the engine builds."
+            kicker="05 · Retail"
+            progress={progress}
+            blocks={[
+              <p key="a">DTC demand, wholesale, big-box distribution, and the PGA TOUR Fan Shop turn brand heat into volume. Events, shops, ambassadors, and content all drive people back to where they can actually buy.</p>,
+              <div className="rf-checklist" key="b">
+                {retailList.map((item) => (
+                  <span className="rf-check" key={item}>
+                    {item}
+                  </span>
+                ))}
+              </div>,
+              <p className="rf-keyline" key="c">Presence creates demand. Retail captures it.</p>
+            ]}
+          />
+        )}
+      </PillarScene>
+
+      {/* 12 — Brand Memory (coda to the engine) */}
       <DocScene
         id="memory"
         kicker="Brand Memory"
@@ -676,92 +817,12 @@ export default function Home() {
         ]}
       />
 
-      {/* 8 — The Pro Shop Standard */}
-      <DocScene
-        id="proshop"
-        kicker="Green Grass"
-        heading="The pro shop is not a sales channel. It is the showroom."
-        blocks={[
-          <p key="a">Del Campo belongs where golfers already browse before and after a round. The goal is not just to get socks into pro shops — it is to make Del Campo the premium sock standard inside them.</p>,
-          <div className="rf-checklist" key="b">
-            {proShopList.map((item) => (
-              <span className="rf-check" key={item}>
-                {item}
-              </span>
-            ))}
-          </div>,
-          <p className="rf-keyline" key="c">If the socks look like an afterthought, they sell like one. Del Campo should own the presentation.</p>
-        ]}
-      />
-
-      {/* 9 — The Media Engine */}
-      <DocScene
-        height={1.8}
-        id="media"
-        kicker="Content"
-        heading="A classy golf channel, not a bro content house."
-        blocks={[
-          <p key="a">Content is massive in golf, but Del Campo does not need to become Good Good. The opportunity is a premium, editorial, golf-native layer — one host, one point of view, repeatable formats — that makes Del Campo present inside the culture without cheapening it.</p>,
-          <div className="rf-formats" key="b">
-            {formats.map(([title, body]) => (
-              <div className="rf-format" key={title}>
-                <strong>{title}</strong>
-                <p>{body}</p>
-              </div>
-            ))}
-          </div>
-        ]}
-      />
-
-      {/* 10 — Caddie Visibility (intro → roadmap) */}
-      <ScrollScene className="rf-caddie" height={2.6} id="caddie">
-        {(progress) => (
-          <div className="rf-doc">
-            <Reveal className="rf-doc-head" hold={0.92} index={0} progress={progress}>
-              <Kicker>On the Bag</Kicker>
-              <h2>The best sock visibility may not be on players.</h2>
-            </Reveal>
-            <div className="rf-stage">
-              <Beat progress={progress} win={[0.08, 0.18, 0.42, 0.5]}>
-                <div className="rf-wedge-intro">
-                  <p>Players wear pants. Caddies wear shorts. That makes caddies one of the most natural visibility channels for a golf sock brand.</p>
-                  <p className="rf-lead">A few respected caddies in recognizable Del Campo socks can create more brand memory than a wall of cheap influencer posts.</p>
-                </div>
-              </Beat>
-              <Beat progress={progress} win={[0.5, 0.6, 0.9, 0.98]}>
-                <h3 className="rf-sub">The Play</h3>
-                <Roadmap from={0.56} progress={progress} steps={caddiePlay} to={0.86} />
-                <p className="rf-keyline">Caddies are not vanity influencers. They are culture carriers.</p>
-              </Beat>
-            </div>
-          </div>
-        )}
-      </ScrollScene>
-
-      {/* 11 — College Rivalry Golf */}
-      <DocScene
-        id="college"
-        kicker="Young Golf"
-        heading="College rivalry golf is a low-cost culture wedge."
-        blocks={[
-          <p key="a">It gives Del Campo a way to create tasteful, fun, repeatable content without turning the brand into a circus — and connects naturally to licensed designs, alumni pride, and younger golfers who care what feels cool.</p>,
-          <div className="rf-checklist" key="b">
-            {collegePlays.map((item) => (
-              <span className="rf-check" key={item}>
-                {item}
-              </span>
-            ))}
-          </div>,
-          <p className="rf-keyline" key="c">This is where Del Campo can be young without becoming unserious.</p>
-        ]}
-      />
-
-      {/* 12 — The Growth Flywheel */}
+      {/* 13 — The Growth Flywheel */}
       <ScrollScene className="rf-flywheel" height={4} id="flywheel">
         {(progress) => <GrowthFlywheel progress={progress} />}
       </ScrollScene>
 
-      {/* 13 — The First Strategic Plays */}
+      {/* 14 — The First Strategic Plays */}
       <DocScene
         height={1.9}
         id="plays"
@@ -780,7 +841,7 @@ export default function Home() {
         ]}
       />
 
-      {/* 14 — The Operating System */}
+      {/* 15 — The Operating System */}
       <DocScene
         height={1.8}
         id="engine"
@@ -799,7 +860,7 @@ export default function Home() {
         ]}
       />
 
-      {/* 15 — Closing */}
+      {/* 16 — Closing */}
       <ScrollScene className="rf-final" height={1.9}>
         {(progress) => (
           <div className="rf-doc">
