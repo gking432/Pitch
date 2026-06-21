@@ -1481,7 +1481,370 @@ html {
   color: var(--rf-neon);
 }
 
-/* Image placeholders */
+/* ============================================================ */
+/* Single-screen doc sections                                   */
+/* ============================================================ */
+.rf-doc {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.2vh, 26px);
+  margin: 0 auto;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.rf-doc-head h2 {
+  font-size: clamp(2.1rem, 4.6vw, 3.9rem);
+  line-height: 0.92;
+  max-width: 19ch;
+}
+
+.rf-doc p {
+  color: var(--rf-muted);
+  font-size: clamp(1.04rem, 1.5vw, 1.32rem);
+  line-height: 1.45;
+  margin: 0;
+  max-width: 760px;
+  text-align: left;
+}
+
+.rf-doc .rf-lead {
+  color: var(--rf-cream);
+  font-weight: 850;
+}
+
+.rf-doc .rf-keyline,
+.rf-beat .rf-keyline {
+  border-left: 4px solid var(--rf-neon);
+  color: var(--rf-cream);
+  font-weight: 850;
+  margin-top: 0 !important;
+  padding-left: 18px;
+}
+
+.rf-doc .rf-sub,
+.rf-beat .rf-sub {
+  color: var(--rf-cream);
+  font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+  font-weight: 900;
+  margin: 0 0 6px;
+}
+
+.rf-doc .rf-cta {
+  margin-top: clamp(14px, 2.4vh, 26px);
+}
+
+/* Compact grids so each section fits one screen */
+.rf-doc .rf-rule {
+  gap: 12px;
+}
+
+.rf-doc .rf-rule-card {
+  padding: 18px;
+}
+
+.rf-doc .rf-checklist {
+  gap: 8px;
+}
+
+.rf-doc .rf-check {
+  font-size: 0.88rem;
+  padding: 9px 14px;
+}
+
+.rf-doc .rf-formats,
+.rf-doc .rf-modules {
+  gap: 12px;
+}
+
+.rf-doc .rf-format,
+.rf-doc .rf-module {
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.rf-doc .rf-format strong,
+.rf-doc .rf-module strong {
+  font-size: 1.02rem;
+  margin-bottom: 4px;
+}
+
+.rf-doc .rf-format p,
+.rf-doc .rf-module p {
+  font-size: 0.86rem;
+  line-height: 1.32;
+}
+
+.rf-doc .rf-plays {
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0;
+}
+
+.rf-doc .rf-play {
+  padding: 16px;
+}
+
+.rf-doc .rf-play strong {
+  font-size: clamp(1rem, 1.5vw, 1.24rem);
+  margin: 6px 0;
+}
+
+.rf-doc .rf-play p {
+  font-size: 0.86rem;
+  line-height: 1.32;
+}
+
+.rf-source-wrap {
+  width: 100%;
+}
+
+/* ---------------- Hero ---------------- */
+.rf-hero-doc {
+  align-items: center;
+  text-align: center;
+}
+
+.rf-hero-doc .rf-line {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.rf-chunk {
+  color: var(--rf-cream);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: clamp(3.4rem, 10vw, 8rem);
+  font-weight: 950;
+  gap: 0 0.26em;
+  justify-content: center;
+  letter-spacing: -0.06em;
+  line-height: 0.82;
+  margin: 4px 0 0;
+  text-transform: uppercase;
+}
+
+.rf-chunk-word {
+  align-items: baseline;
+  display: inline-flex;
+}
+
+.rf-cap {
+  color: var(--rf-neon);
+  font-size: 1.32em;
+  line-height: 0.7;
+  margin-right: 0.01em;
+}
+
+/* ---------------- Hero / closing lines ---------------- */
+.rf-lines {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.4vh, 16px);
+  margin-top: clamp(16px, 2.4vh, 30px);
+}
+
+.rf-line {
+  color: var(--rf-cream);
+  font-size: clamp(1.05rem, 1.55vw, 1.38rem);
+  font-weight: 760;
+  line-height: 1.34;
+  margin: 0 auto;
+  max-width: 780px;
+}
+
+/* ---------------- Two-beat stage (wedge / caddie) ---------------- */
+.rf-wedge .rf-sticky,
+.rf-caddie .rf-sticky {
+  justify-content: flex-start;
+}
+
+.rf-wedge .rf-doc,
+.rf-caddie .rf-doc {
+  height: 100%;
+  padding-top: clamp(20px, 5vh, 56px);
+}
+
+.rf-stage {
+  flex: 1 1 auto;
+  margin-top: clamp(14px, 2.4vh, 26px);
+  min-height: 0;
+  position: relative;
+}
+
+.rf-beat {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vh, 22px);
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+}
+
+.rf-wedge-intro {
+  position: relative;
+  z-index: 1;
+}
+
+.rf-wedge-intro p {
+  color: var(--rf-muted);
+  font-size: clamp(1.1rem, 1.7vw, 1.5rem);
+  line-height: 1.4;
+  margin: 0 0 0.7em;
+  max-width: 720px;
+}
+
+.rf-wedge-intro .rf-lead {
+  color: var(--rf-cream);
+  font-weight: 850;
+  margin-bottom: 0;
+}
+
+/* Falling background shapes */
+.rf-drops {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.rf-drop {
+  border-radius: 50%;
+  filter: blur(1px);
+  position: absolute;
+}
+
+/* ---------------- Marketing-engine network ---------------- */
+.rf-net-scene .rf-sticky {
+  justify-content: center;
+}
+
+.rf-net-doc {
+  align-items: center;
+  text-align: center;
+}
+
+.rf-net {
+  aspect-ratio: 1;
+  margin: clamp(12px, 2.5vh, 28px) auto 0;
+  position: relative;
+  width: min(68vmin, 540px);
+}
+
+.rf-net-lines {
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  position: absolute;
+  width: 100%;
+}
+
+.rf-net-core {
+  align-items: center;
+  aspect-ratio: 1;
+  background: var(--rf-neon);
+  border-radius: 50%;
+  box-shadow: 0 0 0 10px rgba(47, 207, 42, 0.16);
+  color: #08230f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  translate: -50% -50%;
+  width: 27%;
+  z-index: 2;
+}
+
+.rf-net-core span {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rf-net-core strong {
+  font-size: clamp(0.95rem, 2vw, 1.4rem);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.rf-net-node {
+  background: var(--rf-panel);
+  border: 1px solid var(--rf-line);
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  color: var(--rf-cream);
+  font-size: clamp(0.7rem, 1.05vw, 0.9rem);
+  font-weight: 800;
+  left: 50%;
+  padding: 7px 12px;
+  position: absolute;
+  top: 50%;
+  translate: -50% -50%;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* ---------------- Roadmap ---------------- */
+.rf-road {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1vh, 12px);
+  list-style: none;
+  margin: clamp(8px, 1.4vh, 16px) 0 0;
+  max-width: 760px;
+  padding: 0;
+  position: relative;
+}
+
+.rf-road::before {
+  background: linear-gradient(var(--rf-neon), rgba(47, 207, 42, 0.15));
+  bottom: 18px;
+  content: "";
+  left: 18px;
+  position: absolute;
+  top: 18px;
+  width: 2px;
+}
+
+.rf-road-step {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  position: relative;
+}
+
+.rf-road-dot {
+  align-items: center;
+  background: var(--rf-panel);
+  border: 2px solid var(--rf-neon);
+  border-radius: 50%;
+  color: var(--rf-cream);
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 950;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+  z-index: 1;
+}
+
+.rf-road-step p {
+  color: var(--rf-cream);
+  font-size: clamp(0.95rem, 1.4vw, 1.16rem);
+  line-height: 1.3;
+  margin: 0;
+  max-width: none;
+  text-align: left;
+}
+
+/* Image placeholders (legacy, unused) */
 .rf-slot {
   align-items: center;
   background:
