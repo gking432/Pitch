@@ -31,8 +31,8 @@ function ScrollScene({ id, className = "", height = 1.7, children }: SceneProps)
 function Reveal({
   progress,
   index = 0,
-  hold = 0.8,
-  out = 0.96,
+  hold = 0.85,
+  out = 0.97,
   base = 0.05,
   gap = 0.06,
   className = "",
@@ -153,13 +153,50 @@ function Lines({
 /* ------------------------------------------------------------------ */
 
 const stats = [
-  { value: "48.1M", label: "Americans played golf on-course or off-course in 2025.", bar: "72%", accent: "var(--rf-neon)" },
-  { value: "29.1M", label: "People played traditional on-course golf.", bar: "52%", accent: "var(--rf-gold)" },
-  { value: "19M", label: "People only played off-course golf: ranges, simulators, and entertainment venues.", bar: "42%", accent: "var(--rf-teal)" },
-  { value: "8.1M", label: "Women and girls played on-course golf, matching a record share.", bar: "34%", accent: "var(--rf-coral)" }
+  { value: "48.1M", label: "Americans played golf on- or off-course in 2025.", accent: "var(--rf-neon)" },
+  { value: "29.1M", label: "Played traditional on-course golf.", accent: "var(--rf-gold)" },
+  { value: "19M", label: "Played off-course only — ranges, sims, and venues.", accent: "var(--rf-teal)" },
+  { value: "8.1M", label: "Women and girls on-course, a record share.", accent: "var(--rf-coral)" }
 ];
 
 const PILLARS = ["Events", "Green Grass", "Ambassadors", "Content", "Retail"];
+
+/* Large pillar nodes: scattered network position [x%, y%] -> top-bar slot. */
+const engineNodes = [
+  { label: "Events", accent: "var(--rf-neon)", net: [20, 40], size: 104 },
+  { label: "Green Grass", accent: "var(--rf-gold)", net: [50, 62], size: 116 },
+  { label: "Ambassadors", accent: "var(--rf-teal)", net: [76, 34], size: 108 },
+  { label: "Content", accent: "var(--rf-coral)", net: [34, 76], size: 96 },
+  { label: "Retail", accent: "var(--rf-neon)", net: [84, 70], size: 100 }
+];
+
+/* Smaller supporting nodes that live behind the five and fade on morph. */
+const subNodes = [
+  { label: "Member-guests", parent: 0, net: [8, 24], size: 52 },
+  { label: "Tournaments", parent: 0, net: [10, 56], size: 44 },
+  { label: "Outings", parent: 0, net: [30, 18], size: 42 },
+  { label: "Pro shops", parent: 1, net: [44, 84], size: 50 },
+  { label: "Reorders", parent: 1, net: [62, 80], size: 42 },
+  { label: "Caddies", parent: 2, net: [90, 16], size: 48 },
+  { label: "College", parent: 2, net: [70, 14], size: 44 },
+  { label: "Creators", parent: 3, net: [20, 90], size: 44 },
+  { label: "Course stories", parent: 3, net: [46, 92], size: 42 },
+  { label: "DTC", parent: 4, net: [95, 48], size: 42 },
+  { label: "Wholesale", parent: 4, net: [94, 86], size: 44 },
+  { label: "Fan Shop", parent: 4, net: [72, 84], size: 44 }
+];
+
+/* Chain links between the five large nodes. */
+const engineLinks = [
+  [0, 1],
+  [1, 2],
+  [1, 3],
+  [2, 4],
+  [3, 4],
+  [0, 3]
+];
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 const memberGuestPlay = [
   "Identify premium clubs with upcoming member-guests.",
@@ -264,26 +301,25 @@ const dropShapes = [
 function StatBlock({
   value,
   label,
-  bar,
   accent,
   index,
   progress
 }: {
   value: string;
   label: string;
-  bar: string;
   accent: string;
   index: number;
   progress: MotionValue<number>;
 }) {
-  const start = 0.16 + index * 0.05;
-  const height = useTransform(progress, [start, start + 0.22], ["12%", bar]);
-  const opacity = useTransform(progress, [start, start + 0.1, 0.82, 0.95], [0, 1, 1, 0]);
+  const start = 0.16 + index * 0.06;
+  const opacity = useTransform(progress, [start, start + 0.12, 0.84, 0.95], [0, 1, 1, 0]);
+  const scaleX = useTransform(progress, [start, start + 0.18], [0.2, 1]);
   return (
     <motion.div className="rf-stat" style={{ opacity }}>
-      <motion.div className="rf-stat-bar" style={{ height, background: accent }}>
+      <div className="rf-stat-bar" style={{ background: accent }}>
         <strong>{value}</strong>
-      </motion.div>
+      </div>
+      <motion.span className="rf-stat-rule" style={{ background: accent, scaleX }} />
       <p>{label}</p>
     </motion.div>
   );
@@ -402,12 +438,108 @@ function PillarTimeline({ index, animate, progress }: { index: number; animate: 
   );
 }
 
+/* The marketing engine as a living network that fluidly morphs into the
+   top progress bar. Five large pillar nodes + supporting nodes, all wired
+   together, drift up into an evenly spaced row as you scroll. */
+function EngineNetwork({ progress }: { progress: MotionValue<number> }) {
+  // 0 = full network, 1 = collapsed into the top bar.
+  const morph = useTransform(progress, [0.42, 0.74], [0, 1]);
+
+  const headOpacity = useTransform(progress, [0.02, 0.1, 0.7, 0.78], [0, 1, 1, 0]);
+  const subOpacity = useTransform(progress, [0.12, 0.22, 0.42, 0.52], [0, 1, 1, 0]);
+  const lineOpacity = useTransform(progress, [0.1, 0.2, 0.5, 0.64], [0, 0.5, 0.5, 0]);
+  const captionOpacity = useTransform(progress, [0.78, 0.86, 0.95, 1], [0, 1, 1, 0]);
+
+  // Per-node live centers (in 0..100 space) so the wiring follows the morph.
+  const barY = 14;
+  const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], 8 + i * 21, m)));
+  const nodeY = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.net[1], barY, m)));
+  const nodeSize = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 30, m)));
+  const nodeAppear = engineNodes.map((_, i) => useTransform(progress, [0.04 + i * 0.025, 0.16 + i * 0.025], [0, 1]));
+
+  return (
+    <div className="rf-net">
+      <motion.div className="rf-net-head" style={{ opacity: headOpacity }}>
+        <Kicker>The Marketing Engine</Kicker>
+        <h2>One engine. Five ways in.</h2>
+        <p>Events seed it. Green grass sells it. Ambassadors prove it. Content spreads it. Retail scales it.</p>
+      </motion.div>
+
+      <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
+        {/* large-to-large links */}
+        {engineLinks.map(([a, b], i) => (
+          <motion.line
+            key={`l${i}`}
+            stroke="var(--rf-cream)"
+            strokeWidth={0.18}
+            style={{ opacity: lineOpacity }}
+            x1={nodeX[a]}
+            x2={nodeX[b]}
+            y1={nodeY[a]}
+            y2={nodeY[b]}
+          />
+        ))}
+        {/* sub-to-parent links */}
+        {subNodes.map((s, i) => (
+          <motion.line
+            key={`s${i}`}
+            stroke="var(--rf-cream)"
+            strokeWidth={0.14}
+            style={{ opacity: subOpacity }}
+            x1={s.net[0]}
+            x2={nodeX[s.parent]}
+            y1={s.net[1]}
+            y2={nodeY[s.parent]}
+          />
+        ))}
+      </svg>
+
+      {/* supporting nodes */}
+      {subNodes.map((s, i) => (
+        <motion.div
+          className="rf-net-sub"
+          key={s.label}
+          style={{
+            left: `${s.net[0]}%`,
+            top: `${s.net[1]}%`,
+            width: s.size,
+            height: s.size,
+            opacity: subOpacity
+          }}
+        >
+          <span>{s.label}</span>
+        </motion.div>
+      ))}
+
+      {/* the five pillar nodes */}
+      {engineNodes.map((n, i) => (
+        <motion.div
+          className="rf-net-node"
+          key={n.label}
+          style={{
+            left: useTransform(nodeX[i], (v) => `${v}%`),
+            top: useTransform(nodeY[i], (v) => `${v}%`),
+            opacity: nodeAppear[i]
+          }}
+        >
+          <motion.span className="rf-net-disc" style={{ width: nodeSize[i], height: nodeSize[i], background: n.accent }} />
+          <span className="rf-net-label">{n.label}</span>
+        </motion.div>
+      ))}
+
+      <motion.p className="rf-net-caption" style={{ opacity: captionOpacity }}>
+        Scroll the five pillars below.
+      </motion.p>
+    </div>
+  );
+}
+
 function PillarScene({
   id,
   className = "",
   index,
   animate = true,
-  height = 1.8,
+  height = 2.6,
   children
 }: {
   id?: string;
@@ -541,16 +673,9 @@ export default function Home() {
             <Reveal index={1} progress={progress}>
               <h1 className="rf-hero-title">Own the Sock Drawer.</h1>
             </Reveal>
-            <Lines
-              base={0.3}
-              items={[
-                "Golf upgraded the clubs, the shoes, the polos, the hats, the belts, the bags, and the watches.",
-                "But every golfer still reaches into the same overlooked drawer before they play.",
-                "Del Campo turns that drawer into a position: premium, fun, recognizable golf socks for pro shops, member-guests, caddie yards, and the best clubs in America.",
-                "Not a plan to chase attention. A plan to earn presence where golf already trusts what it wears."
-              ]}
-              progress={progress}
-            />
+            <Reveal base={0.34} hold={0.85} index={2} progress={progress}>
+              <p className="rf-hero-tag">Golf upgraded everything but the sock drawer. Del Campo makes the pair golf recognizes.</p>
+            </Reveal>
           </div>
         )}
       </ScrollScene>
@@ -637,35 +762,21 @@ export default function Home() {
         )}
       </ScrollScene>
 
-      {/* 6 — The Marketing Engine (bubbles) */}
-      <DocScene
-        className="rf-engine"
-        height={1.7}
-        id="engine-view"
-        kicker="The Marketing Engine"
-        heading="One engine. Five ways in."
-        blocks={[
-          <p key="a">Every channel feeds the same machine. Events seed the brand. Green grass sells it. Ambassadors prove it. Content spreads it. Retail scales it.</p>,
-          <div className="rf-token-field rf-engine-bubbles" key="b">
-            {PILLARS.map((item) => (
-              <span className="rf-token" key={item}>
-                {item}
-              </span>
-            ))}
-          </div>
-        ]}
-      />
+      {/* 6 — The Marketing Engine (network morphs into the top bar) */}
+      <ScrollScene className="rf-engine" height={3.6} id="engine-view">
+        {(progress) => <EngineNetwork progress={progress} />}
+      </ScrollScene>
 
       {/* 7 — Pillar 01: Events (falling socks → roadmap) */}
-      <PillarScene className="rf-events" height={2.9} id="events" index={0}>
+      <PillarScene className="rf-events" height={4.6} id="events" index={0}>
         {(progress) => (
           <div className="rf-doc rf-doc--fill">
-            <Reveal className="rf-doc-head" hold={0.92} index={0} progress={progress}>
+            <Reveal className="rf-doc-head" hold={0.95} index={0} progress={progress}>
               <Kicker>01 · Events</Kicker>
               <h2>Events are the way in.</h2>
             </Reveal>
             <div className="rf-stage">
-              <Beat progress={progress} win={[0.1, 0.2, 0.42, 0.5]}>
+              <Beat progress={progress} win={[0.08, 0.16, 0.4, 0.48]}>
                 <div className="rf-drops" aria-hidden>
                   {dropShapes.map((shape, i) => (
                     <DropShape {...shape} index={i} key={i} progress={progress} />
@@ -682,9 +793,9 @@ export default function Home() {
                   </p>
                 </div>
               </Beat>
-              <Beat progress={progress} win={[0.5, 0.6, 0.9, 0.98]}>
+              <Beat progress={progress} win={[0.46, 0.54, 0.94, 0.99]}>
                 <h3 className="rf-sub">The Play</h3>
-                <Roadmap from={0.56} progress={progress} steps={memberGuestPlay} to={0.86} />
+                <Roadmap from={0.54} progress={progress} steps={memberGuestPlay} to={0.92} />
                 <p className="rf-keyline">Custom club socks are not a product. They are a market-entry strategy.</p>
               </Beat>
             </div>
@@ -753,7 +864,7 @@ export default function Home() {
       </PillarScene>
 
       {/* 10 — Pillar 04: Content */}
-      <PillarScene className="rf-content" height={1.9} id="content" index={3}>
+      <PillarScene className="rf-content" height={2.8} id="content" index={3}>
         {(progress) => (
           <PillarDoc
             heading="A classy golf channel, not a bro content house."
