@@ -701,10 +701,18 @@ html {
 }
 
 .rf-scroll {
-  bottom: 24px;
-  color: var(--rf-cream);
+  align-items: center;
+  bottom: 22px;
+  color: var(--rf-muted);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.72rem;
+  font-weight: 850;
+  gap: 6px;
   left: 50%;
+  letter-spacing: 0.14em;
   position: absolute;
+  text-transform: uppercase;
   transform: translateX(-50%);
 }
 
@@ -1100,6 +1108,369 @@ html {
 .rf-cta-wrap {
   display: flex;
   justify-content: center;
+}
+
+/* ---------------- Editorial sections (large scroll story) ---------------- */
+.rf-edit {
+  padding: clamp(96px, 15vh, 180px) 24px;
+}
+
+.rf-edit-inner {
+  margin: 0 auto;
+  max-width: 1040px;
+}
+
+.rf-edit h2 {
+  font-size: clamp(2.3rem, 4.8vw, 4.2rem);
+  letter-spacing: -0.05em;
+  line-height: 0.94;
+  max-width: 18ch;
+}
+
+.rf-sub {
+  color: var(--rf-cream);
+  font-size: clamp(1.1rem, 1.7vw, 1.5rem);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  margin: clamp(36px, 5vh, 56px) 0 20px;
+}
+
+.rf-edit-body {
+  margin-top: clamp(22px, 3vh, 34px);
+  max-width: 760px;
+}
+
+.rf-edit-body p {
+  font-size: clamp(1.1rem, 1.55vw, 1.34rem);
+  line-height: 1.5;
+  margin: 0 0 1.1em;
+  text-align: left;
+}
+
+.rf-lead {
+  color: var(--rf-cream) !important;
+  font-weight: 800;
+}
+
+.rf-keyline {
+  border-left: 4px solid var(--rf-neon);
+  color: var(--rf-cream) !important;
+  font-weight: 850;
+  margin-top: 1.4em !important;
+  padding-left: 18px;
+}
+
+.rf-keyline--lg {
+  font-size: clamp(1.3rem, 2.4vw, 2rem) !important;
+  line-height: 1.18 !important;
+  margin-top: clamp(34px, 5vh, 56px) !important;
+}
+
+/* Numbered "The Play" steps */
+.rf-steps {
+  counter-reset: step;
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  max-width: 860px;
+  padding: 0;
+}
+
+.rf-steps li {
+  align-items: baseline;
+  border-top: 1px solid var(--rf-line);
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 54px minmax(0, 1fr);
+  padding: 16px 0;
+}
+
+.rf-steps li:last-child {
+  border-bottom: 1px solid var(--rf-line);
+}
+
+.rf-steps span {
+  color: var(--rf-neon);
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.rf-steps p {
+  color: var(--rf-cream);
+  font-size: clamp(1.02rem, 1.5vw, 1.28rem);
+  line-height: 1.4;
+  margin: 0;
+  text-align: left;
+}
+
+/* Three-up brand-memory rule */
+.rf-rule {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rf-rule-card {
+  background: var(--rf-panel);
+  border: 1px solid var(--rf-line);
+  border-top: 4px solid var(--rf-neon);
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.07);
+  padding: 22px;
+}
+
+.rf-rule-card strong {
+  display: block;
+  font-size: 1.16rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.rf-rule-card p {
+  color: var(--rf-muted);
+  font-size: 0.98rem;
+  line-height: 1.4;
+  margin: 0;
+  text-align: left;
+}
+
+/* Checklist chips */
+.rf-checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 920px;
+}
+
+.rf-check {
+  align-items: center;
+  background: var(--rf-panel);
+  border: 1px solid var(--rf-line);
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.94rem;
+  font-weight: 750;
+  gap: 9px;
+  padding: 11px 16px;
+}
+
+.rf-check::before {
+  background: var(--rf-neon);
+  border-radius: 50%;
+  content: "";
+  height: 8px;
+  width: 8px;
+}
+
+/* Channel concept callout */
+.rf-channel {
+  background: var(--rf-panel);
+  border: 1px solid var(--rf-line);
+  border-radius: 20px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+  margin-top: clamp(28px, 4vh, 44px);
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.rf-channel-label {
+  color: var(--rf-green);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.rf-channel strong {
+  display: block;
+  font-size: clamp(1.8rem, 3.4vw, 3rem);
+  font-weight: 950;
+  letter-spacing: -0.05em;
+  margin: 8px 0 10px;
+}
+
+.rf-channel p {
+  color: var(--rf-muted);
+  font-size: 1.06rem;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 720px;
+  text-align: left;
+}
+
+.rf-channel-slot {
+  margin-top: 22px;
+}
+
+/* Media formats grid */
+.rf-formats {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rf-format {
+  background: var(--rf-panel);
+  border: 1px solid var(--rf-line);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  padding: 22px;
+}
+
+.rf-format strong {
+  display: block;
+  font-size: 1.18rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.rf-format p {
+  color: var(--rf-muted);
+  font-size: 0.98rem;
+  line-height: 1.42;
+  margin: 0;
+  text-align: left;
+}
+
+/* Strategic plays */
+.rf-plays {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: clamp(30px, 5vh, 52px);
+}
+
+.rf-play {
+  background: var(--rf-panel);
+  border: 1px solid var(--rf-line);
+  border-radius: 16px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.07);
+  padding: 26px;
+}
+
+.rf-play span {
+  color: var(--rf-neon);
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.rf-play strong {
+  display: block;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  margin: 10px 0 8px;
+}
+
+.rf-play p {
+  color: var(--rf-muted);
+  font-size: 0.98rem;
+  line-height: 1.45;
+  margin: 0;
+  text-align: left;
+}
+
+/* Operating-system modules */
+.rf-modules {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: clamp(30px, 5vh, 52px);
+}
+
+.rf-module {
+  background: var(--rf-panel);
+  border: 1px solid var(--rf-line);
+  border-left: 4px solid var(--rf-neon);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  padding: 22px;
+}
+
+.rf-module strong {
+  display: block;
+  font-size: 1.14rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.rf-module p {
+  color: var(--rf-muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0;
+  text-align: left;
+}
+
+/* Statement pull-quote (pinned) */
+.rf-statement {
+  color: var(--rf-cream);
+  font-size: clamp(2rem, 4.6vw, 4.2rem);
+  font-weight: 950;
+  letter-spacing: -0.05em;
+  line-height: 1.04;
+  margin: 0 auto;
+  max-width: 16ch;
+  text-align: center;
+}
+
+.rf-statement span {
+  color: var(--rf-neon);
+}
+
+/* Image placeholders */
+.rf-slot {
+  align-items: center;
+  background:
+    repeating-linear-gradient(135deg, rgba(47, 207, 42, 0.05) 0 14px, transparent 14px 28px),
+    var(--rf-panel);
+  border: 2px dashed rgba(47, 207, 42, 0.45);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  margin-top: clamp(26px, 4vh, 44px);
+  padding: 26px;
+  text-align: center;
+  width: 100%;
+}
+
+.rf-slot-tag {
+  background: var(--rf-neon);
+  border-radius: 999px;
+  color: #08230f;
+  font-size: 0.66rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  padding: 4px 12px;
+  text-transform: uppercase;
+}
+
+.rf-slot-label {
+  color: var(--rf-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  max-width: 40ch;
+}
+
+@media (max-width: 820px) {
+  .rf-rule,
+  .rf-modules,
+  .rf-formats,
+  .rf-plays {
+    grid-template-columns: 1fr;
+  }
+
+  .rf-steps li {
+    gap: 14px;
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .rf-edit {
+    padding: clamp(70px, 11vh, 110px) 20px;
+  }
 }
 
 @media (max-width: 900px) {

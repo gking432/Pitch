@@ -1,9 +1,14 @@
 "use client";
 
-import { Fragment, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion, MotionValue, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { campaigns, productImages } from "@/lib/strategy";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/* ------------------------------------------------------------------ */
+/* Pinned scene infrastructure (cinematic "page holds still" moments)  */
+/* ------------------------------------------------------------------ */
 
 type SceneProps = {
   id?: string;
@@ -12,19 +17,9 @@ type SceneProps = {
   children: (progress: MotionValue<number>) => React.ReactNode;
 };
 
-/**
- * A pinned scene. The section is taller than the viewport; the inner panel
- * sticks to the top for the duration, so the page stays visually stagnant
- * while only the content inside transitions. `progress` runs 0 -> 1 across
- * the pinned travel.
- */
 function ScrollScene({ id, className = "", height = 1.9, children }: SceneProps) {
   const ref = useRef<HTMLElement | null>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end end"]
-  });
-
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   return (
     <section className={`rf-scene ${className}`} id={id} ref={ref} style={{ minHeight: `${height * 100}vh` }}>
       <div className="rf-sticky">{children(scrollYProgress)}</div>
@@ -32,11 +27,6 @@ function ScrollScene({ id, className = "", height = 1.9, children }: SceneProps)
   );
 }
 
-/**
- * Wraps a scene's content so it animates IN as the scene pins and OUT as it
- * releases: rise + fade + a soft focus-in. This is what makes the words feel
- * like they "come and go" while the background holds still.
- */
 function SceneBody({
   progress,
   children,
@@ -52,11 +42,7 @@ function SceneBody({
 }) {
   const opacity = useTransform(progress, [0, enter, exit, 1], [0, 1, 1, 0]);
   const y = useTransform(progress, [0, enter, exit, 1], [travel, 0, 0, -travel]);
-  const filter = useTransform(
-    progress,
-    [0, enter, exit, 1],
-    ["blur(7px)", "blur(0px)", "blur(0px)", "blur(7px)"]
-  );
+  const filter = useTransform(progress, [0, enter, exit, 1], ["blur(7px)", "blur(0px)", "blur(0px)", "blur(7px)"]);
   return (
     <motion.div className="rf-body" style={{ opacity, y, filter }}>
       {children}
@@ -64,18 +50,13 @@ function SceneBody({
   );
 }
 
-/**
- * Staggered child that slides up into place during the scene's hold window.
- * Exit is handled by the parent SceneBody, so this only does the entrance.
- */
 function Stagger({
   children,
   progress,
   index,
   start = 0.2,
   step = 0.05,
-  className,
-  ...rest
+  className
 }: {
   children: React.ReactNode;
   progress: MotionValue<number>;
@@ -83,69 +64,237 @@ function Stagger({
   start?: number;
   step?: number;
   className?: string;
-  href?: string;
 }) {
   const begin = start + index * step;
   const opacity = useTransform(progress, [begin, begin + 0.16], [0, 1]);
-  const y = useTransform(progress, [begin, begin + 0.16], [36, 0]);
-  const Tag = rest.href ? motion.a : motion.div;
+  const y = useTransform(progress, [begin, begin + 0.16], [30, 0]);
   return (
-    <Tag className={className} style={{ opacity, y }} {...rest}>
+    <motion.div className={className} style={{ opacity, y }}>
       {children}
-    </Tag>
+    </motion.div>
   );
 }
 
-function FillText({
-  children,
+function Lines({
+  items,
   progress,
   start = 0.22,
-  end = 0.7,
-  className = ""
+  step = 0.05,
+  className = "rf-lines"
 }: {
-  children: string;
+  items: string[];
   progress: MotionValue<number>;
   start?: number;
-  end?: number;
+  step?: number;
   className?: string;
 }) {
-  const words = children.split(" ");
   return (
-    <p className={`rf-fill-text ${className}`}>
-      {words.map((word, index) => (
-        <Fragment key={`${word}-${index}`}>
-          <FillWord end={end} index={index} progress={progress} start={start} total={words.length} word={word} />
-          {index < words.length - 1 ? " " : null}
-        </Fragment>
+    <div className={className}>
+      {items.map((line, i) => (
+        <Stagger className="rf-line" index={i} key={i} progress={progress} start={start} step={step}>
+          {line}
+        </Stagger>
       ))}
-    </p>
+    </div>
   );
 }
 
-function FillWord({
-  word,
-  index,
-  total,
-  progress,
-  start,
-  end
-}: {
-  word: string;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-  start: number;
-  end: number;
-}) {
-  const step = (end - start) / Math.max(total, 1);
-  const wordStart = start + index * step;
-  const color = useTransform(
-    progress,
-    [wordStart, wordStart + step * 2.2],
-    ["rgba(17, 19, 13, 0.22)", "rgba(17, 19, 13, 1)"]
+/* ------------------------------------------------------------------ */
+/* Editorial infrastructure (large scroll sections, reveal on view)    */
+/* ------------------------------------------------------------------ */
+
+function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 38 }}
+      transition={{ duration: 0.6, ease: EASE, delay }}
+      viewport={{ once: true, margin: "-12% 0px" }}
+      whileInView={{ opacity: 1, y: 0 }}
+    >
+      {children}
+    </motion.div>
   );
-  return <motion.span style={{ color }}>{word}</motion.span>;
 }
+
+function Kicker({ children }: { children: React.ReactNode }) {
+  return <span className="rf-kicker">{children}</span>;
+}
+
+/* Labeled placeholder where a real brand asset belongs. */
+function ImageSlot({ label, ratio = "16 / 9", className = "" }: { label: string; ratio?: string; className?: string }) {
+  return (
+    <div className={`rf-slot ${className}`} style={{ aspectRatio: ratio }} aria-hidden>
+      <span className="rf-slot-tag">Image</span>
+      <span className="rf-slot-label">{label}</span>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Data                                                                */
+/* ------------------------------------------------------------------ */
+
+const stats = [
+  { value: "48.1M", label: "Americans played golf on-course or off-course in 2025.", bar: "72%", accent: "var(--rf-neon)" },
+  { value: "29.1M", label: "People played traditional on-course golf.", bar: "52%", accent: "var(--rf-gold)" },
+  { value: "19M", label: "People only played off-course golf: ranges, simulators, and entertainment venues.", bar: "42%", accent: "var(--rf-teal)" },
+  { value: "8.1M", label: "Women and girls played on-course golf, matching a record share.", bar: "34%", accent: "var(--rf-coral)" }
+];
+
+const tokens = [
+  "DTC demand",
+  "Custom club socks",
+  "Green grass pro shops",
+  "Member-guests",
+  "Wholesale / retail",
+  "College licensed drops",
+  "Caddies + PGA pros",
+  "Course visits",
+  "Creator/editorial content",
+  "Creative + AI operations"
+];
+
+const memberGuestPlay = [
+  "Identify premium clubs with upcoming member-guests.",
+  "Reach out months before the event.",
+  "Offer custom club-logo Del Campo socks for every participant.",
+  "Treat the first batch as marketing spend or a deeply discounted seeding program.",
+  "Put the club logo on the sock, but make sure the Del Campo wordmark is visible on the inside foot.",
+  "Give every player a pair.",
+  "Follow up with the pro shop after the event.",
+  "Convert the moment into custom reorders, core Del Campo placement, and future tournament/event orders."
+];
+
+const productRule = [
+  ["The club mark", "So the member wants to wear it."],
+  ["The Del Campo wordmark", "So the wearer knows who made it."],
+  ["A subtle brand cue", "So the sock becomes recognizable over time."]
+];
+
+const proShopList = [
+  "Custom countertop displays.",
+  "Club-logo sock sections.",
+  "Member-guest reorder programs.",
+  "Seasonal club drops.",
+  "Resort golf packs.",
+  "Build-your-pack pro shop bundles.",
+  "QR codes for custom orders.",
+  "Staff picks from the head pro.",
+  "Limited designs tied to club events."
+];
+
+const formats = [
+  ["Pro Shop Visits", "Visit great golf shops, talk to pros, study what sells, and show where Del Campo fits."],
+  ["Course Stories", "Short editorial features on clubs, resort courses, munis, and the people who make them."],
+  ["Inside the Member-Guest", "Tell the story of the event, the tee gift, the custom sock, and the pro shop follow-up."],
+  ["On the Bag", "Caddie stories, tournament weeks, travel, and the socks visible in real play."],
+  ["College Rivalry Golf", "Low-cost, high-energy matches with college golfers, alumni, and rivalry-themed sock drops."],
+  ["Design the Sock", "Show the custom sock process for clubs, events, and partners."],
+  ["The Best Tee Gift in Golf", "A recurring series around member-guests, corporate outings, and tournament gifting."]
+];
+
+const caddiePlay = [
+  "Identify respected caddies.",
+  "Seed smiley socks and premium core styles.",
+  "Offer subtle custom hats where appropriate.",
+  "Build “On the Bag” content around their stories.",
+  "Use caddie visibility as proof, not gimmick.",
+  "Recycle the best photos and clips into social, email, and pro shop materials."
+];
+
+const collegePlays = [
+  "Rivalry match videos.",
+  "Alumni golf weekends.",
+  "Campus-color sock drops.",
+  "College golfer seeding.",
+  "Golf trip packs for rivalry weekends.",
+  "Winner-gets-the-socks formats.",
+  "Limited college-themed content series."
+];
+
+const plays = [
+  ["The Member-Guest Wedge", "Seed custom club-logo socks into premium member-guests, then convert the event into pro shop placement, custom reorders, and brand discovery among serious golfers."],
+  ["The Pro Shop Standard", "Build custom displays, reorder programs, and club-specific sock sections that make Del Campo feel like the premium sock standard inside golf shops."],
+  ["Del Campo Clubhouse", "Create a host-led golf culture channel built around course visits, pro shops, caddies, member-guests, college rivalries, and custom sock stories."],
+  ["On the Bag", "Use high-level caddies as visible proof. Socks show when caddies wear shorts. A few respected caddies in recognizable Del Campo socks can create serious brand memory."],
+  ["College Rivalry Golf", "Use college rivalry matches, alumni weekends, and licensed product moments to create tasteful, young, low-cost golf content."],
+  ["Custom Club Socks", "Turn custom socks into the core B2B wedge: club logos, tournaments, member-guests, corporate outings, resort golf, and annual reorders."],
+  ["Retail Display Program", "Design premium pro shop displays that make Del Campo look like a category leader, not an accessory hanging on a forgotten rack."]
+];
+
+const modules = [
+  ["Growth Command Center", "See the health of the entire marketing engine."],
+  ["Campaign Builder", "Plan DTC drops, member-guest programs, retail pushes, college drops, and content campaigns."],
+  ["Relationship CRM", "Manage caddies, club pros, creators, college golfers, and strategic partners."],
+  ["Distribution Pipeline", "Track pro shops, country clubs, corporate outings, custom sock accounts, and wholesale opportunities."],
+  ["Creative Studio", "Organize briefs, content formats, UGC, photo/video needs, and retail assets."],
+  ["Performance Dashboard", "Measure what is working across DTC, wholesale, custom, content, and relationships."],
+  ["AI Action Queue", "Recommend the next best action across the whole growth system."]
+];
+
+const flywheel = [
+  {
+    label: "Discover",
+    copy: "Find the people, accounts, clubs, events, and moments that can move the brand.",
+    action: "Score member-guests, caddies, club pros, creators, college golfers, and pro-shop prospects by fit, reach, credibility, and revenue potential.",
+    modules: "Relationship CRM · Distribution Pipeline",
+    metric: "Qualified prospects added per week",
+    accent: "var(--rf-neon)"
+  },
+  {
+    label: "Seed",
+    copy: "Put the product in the right rooms before asking the market to care.",
+    action: "Send custom club-logo socks to a premium member-guest and make sure the Del Campo wordmark is visible on the inside foot.",
+    modules: "Distribution Pipeline · Campaign Builder · Creative Studio",
+    metric: "Seeded events and sample packs placed",
+    accent: "var(--rf-gold)"
+  },
+  {
+    label: "Create",
+    copy: "Turn each seeded moment into content, proof, and brand memory.",
+    action: "Film a pro shop visit, capture the custom sock story, and produce short-form clips for the Del Campo Clubhouse channel.",
+    modules: "Creative Studio · Campaign Builder · Relationship CRM",
+    metric: "Content assets created per activation",
+    accent: "var(--rf-teal)"
+  },
+  {
+    label: "Capture",
+    copy: "Collect the proof, leads, feedback, and introductions each activation creates.",
+    action: "Turn a caddie’s on-course sock photo into an approved UGC asset with reuse rights.",
+    modules: "Creative Studio · Relationship CRM · Distribution Pipeline",
+    metric: "UGC assets, leads, and introductions captured",
+    accent: "var(--rf-coral)"
+  },
+  {
+    label: "Convert",
+    copy: "Turn attention and relationships into revenue.",
+    action: "Route a member-guest sock placement into a pro shop reorder, custom club sock program, or DTC follow-up.",
+    modules: "Campaign Builder · Distribution Pipeline · Performance Dashboard",
+    metric: "Revenue, reorders, and accounts closed",
+    accent: "var(--rf-neon)"
+  },
+  {
+    label: "Recycle",
+    copy: "Use the best-performing proof across every growth channel.",
+    action: "Turn member-guest photos into paid ads, email content, a pro shop sell sheet, and a custom sock landing page.",
+    modules: "Creative Studio · Campaign Builder · Performance Dashboard · AI Action Queue",
+    metric: "Assets reused across channels",
+    accent: "var(--rf-gold)"
+  },
+  {
+    label: "Expand",
+    copy: "Use every win to open the next relationship, account, or channel.",
+    action: "Use a successful pro-shop sample program to trigger outreach to five similar clubs with upcoming member-guests.",
+    modules: "Command Center · AI Action Queue · Relationship CRM · Distribution Pipeline",
+    metric: "Referrals and new accounts opened",
+    accent: "var(--rf-teal)"
+  }
+];
+
+/* ------------------------------------------------------------------ */
+/* Pieces                                                              */
+/* ------------------------------------------------------------------ */
 
 function StatBlock({
   value,
@@ -176,82 +325,6 @@ function StatBlock({
   );
 }
 
-const stats = [
-  { value: "48.1M", label: "Americans played golf on-course or off-course in 2025.", bar: "72%", accent: "var(--rf-neon)" },
-  { value: "29.1M", label: "People played traditional on-course golf.", bar: "52%", accent: "var(--rf-gold)" },
-  { value: "19M", label: "People only played off-course golf: ranges, simulators, and entertainment venues.", bar: "42%", accent: "var(--rf-teal)" },
-  { value: "8.1M", label: "Women and girls played on-course golf, matching a record share.", bar: "34%", accent: "var(--rf-coral)" }
-];
-
-const scope = [
-  "DTC demand",
-  "Custom socks",
-  "Green grass pro shops",
-  "Wholesale / retail",
-  "College licensed drops",
-  "Caddies + PGA pros",
-  "Creators + trip captains",
-  "Creative + AI operations"
-];
-
-// Repeated product set for the hero marquee; each row renders it twice for a seamless loop.
-const marqueeSocks = [...productImages, ...productImages, ...productImages];
-
-const flywheel = [
-  {
-    label: "Discover",
-    copy: "Find the people, accounts, and moments that can move the brand.",
-    action: "Score 25 caddie, creator, and pro-shop prospects by fit, reach, and revenue potential.",
-    modules: "Relationship CRM · Distribution Pipeline",
-    metric: "Qualified prospects added / week",
-    accent: "var(--rf-neon)"
-  },
-  {
-    label: "Activate",
-    copy: "Turn prospects into structured growth opportunities.",
-    action: "Send a Caddie Crew kit with a referral code, content prompt, and follow-up task.",
-    modules: "CRM · Campaign Builder · Distribution · AI Queue",
-    metric: "Activations launched / week",
-    accent: "var(--rf-gold)"
-  },
-  {
-    label: "Capture",
-    copy: "Collect the proof, content, leads, and intros each activation creates.",
-    action: "Turn a caddie's on-course sock photo into an approved UGC asset with reuse rights.",
-    modules: "Creative Studio · CRM · Distribution",
-    metric: "UGC assets & leads captured",
-    accent: "var(--rf-coral)"
-  },
-  {
-    label: "Convert",
-    copy: "Turn attention and relationships into revenue.",
-    action: "Route a corporate outing into a custom sock proposal with order value and next step.",
-    modules: "Campaign Builder · Distribution · Performance",
-    metric: "Revenue & orders closed",
-    accent: "var(--rf-neon)"
-  },
-  {
-    label: "Recycle",
-    copy: "Reuse the best-performing proof across every growth channel.",
-    action: "Turn high-performing trip UGC into a paid social test and an email hero.",
-    modules: "Creative Studio · Campaign Builder · Performance · AI Queue",
-    metric: "Assets reused across channels",
-    accent: "var(--rf-gold)"
-  },
-  {
-    label: "Expand",
-    copy: "Use every win to open the next relationship, account, or channel.",
-    action: "Use a successful pro-shop sample pack to trigger outreach to five similar clubs.",
-    modules: "Command Center · AI Queue · CRM · Distribution",
-    metric: "Referrals & new accounts opened",
-    accent: "var(--rf-teal)"
-  }
-];
-
-/**
- * Scroll-driven growth flywheel. As the scene pins, scrolling steps the active
- * blade around the wheel (no clicking) and updates the detail card beside it.
- */
 function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
   const count = flywheel.length;
   const [active, setActive] = useState(0);
@@ -269,7 +342,7 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
   return (
     <motion.div className="rf-fly" style={{ opacity: groupOpacity, y: groupY }}>
       <div className="rf-center-copy rf-fly-head">
-        <span className="rf-kicker">The system</span>
+        <Kicker>The System</Kicker>
         <h2>Growth moves in loops, not one-off campaigns.</h2>
       </div>
 
@@ -282,7 +355,7 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
           />
           <div className="rf-fly-hub">
             <strong>Del Campo</strong>
-            <span>The sock brand golf actually talks about.</span>
+            <span>The premium sock brand golf actually recognizes.</span>
           </div>
           {flywheel.map((s, i) => (
             <div
@@ -290,7 +363,6 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
               key={s.label}
               style={{ "--a": `${i * (360 / count)}deg`, "--accent": s.accent } as React.CSSProperties}
             >
-              <span className="rf-fly-dot" />
               <em>{s.label}</em>
             </div>
           ))}
@@ -298,9 +370,8 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
 
         <div className="rf-fly-detail" style={{ borderColor: stage.accent }}>
           <span className="rf-fly-step" style={{ color: stage.accent }}>
-            Stage {active + 1} / {count}
+            Stage {active + 1} / {count} · {stage.label}
           </span>
-          <strong className="rf-fly-name">{stage.label}</strong>
           <p className="rf-fly-copy">{stage.copy}</p>
           <div className="rf-fly-meta">
             <span className="rf-fly-meta-label">Example action</span>
@@ -319,7 +390,6 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
         </div>
       </div>
 
-      {/* Mobile: the wheel collapses to a readable stacked list. */}
       <div className="rf-fly-list" aria-hidden>
         {flywheel.map((s, i) => (
           <div className={`rf-fly-card ${i === active ? "is-active" : ""}`} key={s.label} style={{ borderColor: i === active ? s.accent : undefined }}>
@@ -335,84 +405,54 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
 export default function Home() {
   return (
     <main className="rf-page">
       <div className="rf-backdrop" aria-hidden />
 
-      <div className="rf-official">
-        <span className="rf-flag">FL</span>
-        Made in the USA · A candidate-built growth plan for Del Campo Golf
-      </div>
-
-      <nav className="rf-nav" aria-label="Public navigation">
-        {/* TODO: replace wordmark with Del Campo logo asset */}
-        <a className="rf-brand" href="#top">
-          Del Campo
-        </a>
-        <div className="rf-nav-links">
-          <a href="#state">State of Golf</a>
-          <a href="#gap">The Gap</a>
-          <a href="#flywheel">The Flywheel</a>
-          <a href="#campaigns">Campaigns</a>
-          <a href="/app/command-center">Strategy Center</a>
-        </div>
-      </nav>
-
-      <ScrollScene className="rf-hero" height={1.9} id="top">
+      {/* 1 — Hero (pinned) */}
+      <ScrollScene className="rf-hero" height={2} id="top">
         {(progress) => {
-          const headOpacity = useTransform(progress, [0, 0.12, 0.64, 0.85], [0, 1, 1, 0]);
-          const headY = useTransform(progress, [0, 0.12, 0.64, 0.85], [44, 0, 0, -90]);
-          const headScale = useTransform(progress, [0, 0.5], [1, 1.05]);
-          const marqueeOpacity = useTransform(progress, [0.05, 0.26, 0.7, 0.9], [0, 1, 1, 0]);
-          const marqueeY = useTransform(progress, [0, 0.26, 0.7, 0.9], [90, 0, 0, -64]);
-          const scrollCueOpacity = useTransform(progress, [0, 0.16, 0.28], [1, 0.5, 0]);
+          const cueOpacity = useTransform(progress, [0, 0.16, 0.3], [1, 0.6, 0]);
           return (
             <>
-              <motion.div className="rf-hero-head" style={{ opacity: headOpacity, y: headY, scale: headScale }}>
-                <span className="rf-kicker">Born on a Florida muni · Made in the USA</span>
-                <h1>
-                  Golf Socks
-                  <br />
-                  <span className="rf-hero-accent">Can Win.</span>
-                </h1>
-                <FillText className="rf-hero-fill" progress={progress} start={0.1} end={0.44}>
-                  Golf is bigger, younger, more social, and more commercially fragmented than ever. Del Campo can turn the most overlooked thing every golfer already wears into a brand golf actually talks about.
-                </FillText>
-              </motion.div>
-
-              {/* WOW element: dual rows of real product streaming in opposite directions */}
-              <motion.div className="rf-hero-marquee" style={{ opacity: marqueeOpacity, y: marqueeY }} aria-hidden>
-                <div className="rf-marquee-row rf-marquee-row--a">
-                  {marqueeSocks.concat(marqueeSocks).map((img, i) => (
-                    <div className="rf-sock" key={`a-${i}`}>
-                      <img alt="" src={img.src} />
-                    </div>
-                  ))}
+              <SceneBody progress={progress}>
+                <div className="rf-center-copy">
+                  <Kicker>Born on a Florida muni. Made in the USA.</Kicker>
+                  <h1>Own the Sock Drawer.</h1>
+                  <Lines
+                    items={[
+                      "Golf has upgraded the clubs, the shoes, the polos, the hats, the belts, the bags, and the watches.",
+                      "But every golfer still reaches into the same overlooked drawer before they play.",
+                      "Del Campo can turn that drawer into a brand position: premium, fun, recognizable golf socks that belong in pro shops, member-guests, caddie yards, college rivalries, and the best clubs in America.",
+                      "This is not a plan to chase attention. It is a plan to earn presence where golf culture already trusts what it wears."
+                    ]}
+                    progress={progress}
+                    start={0.2}
+                    step={0.06}
+                  />
                 </div>
-                <div className="rf-marquee-row rf-marquee-row--b">
-                  {marqueeSocks.concat(marqueeSocks).map((img, i) => (
-                    <div className="rf-sock" key={`b-${i}`}>
-                      <img alt="" src={img.src} />
-                    </div>
-                  ))}
-                </div>
+              </SceneBody>
+              <motion.div className="rf-scroll" style={{ opacity: cueOpacity }}>
+                <span>Scroll to see the strategy</span>
+                <ChevronDown size={20} />
               </motion.div>
-
-              <motion.a className="rf-scroll" href="#state" aria-label="Scroll to next section" style={{ opacity: scrollCueOpacity }}>
-                <ChevronDown />
-              </motion.a>
             </>
           );
         }}
       </ScrollScene>
 
-      <ScrollScene className="rf-state" height={2.1} id="state">
+      {/* 2 — The State of Golf (pinned) */}
+      <ScrollScene className="rf-state" height={2.2} id="state">
         {(progress) => (
           <SceneBody progress={progress}>
             <div className="rf-center-copy">
-              <span className="rf-kicker">The State of Golf</span>
-              <h2>The game is expanding. The data is clear.</h2>
+              <Kicker>The State of Golf</Kicker>
+              <h2>The game is expanding. The culture is changing.</h2>
             </div>
             <div className="rf-stat-grid">
               {stats.map((stat, index) => (
@@ -424,91 +464,354 @@ export default function Home() {
         )}
       </ScrollScene>
 
-      <ScrollScene className="rf-gap" id="gap">
-        {(progress) => (
-          <SceneBody progress={progress}>
-            <div className="rf-split-copy">
-              <span className="rf-kicker">The category gap</span>
-              <h2>
-                Golf upgraded everything
-                <br />
-                but the sock drawer.
-              </h2>
-              <FillText progress={progress} start={0.24} end={0.7}>
-                Clubs became technology. Shoes became performance. Polos became identity. Hats became collectable. Socks still sit underneath the category, even though they are visible, giftable, customizable, affordable, and perfect for trips, pro shops, tournaments, college fandom, and corporate golf.
-              </FillText>
-            </div>
-          </SceneBody>
-        )}
-      </ScrollScene>
+      {/* 3 — The Opening (editorial) */}
+      <section className="rf-edit" id="opening">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>The Opening</Kicker>
+            <h2>Golf upgraded everything but the sock drawer.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p className="rf-lead">Clubs became technology. Shoes became performance. Polos became identity. Hats became collectable. Needlepoint belts became a signal.</p>
+            <p>
+              Socks still sit underneath the category, even though they are visible, giftable, customizable, affordable, and perfect for the places golf
+              culture actually spreads: pro shops, member-guests, tournaments, college rivalries, corporate golf, caddie yards, and buddy trips.
+            </p>
+            <p className="rf-keyline">That gap is the opening.</p>
+            <p>
+              Del Campo does not need to invent a new behavior. Golfers already wear socks. The job is to make Del Campo the pair they recognize, talk
+              about, gift, reorder, and look for in the shop.
+            </p>
+          </Reveal>
+        </div>
+      </section>
 
-      <ScrollScene className="rf-why">
-        {(progress) => (
-          <SceneBody progress={progress}>
-            <div className="rf-center-copy">
-              <span className="rf-kicker">Why Del Campo</span>
-              <h2>The ingredients already exist.</h2>
-              <FillText progress={progress} start={0.22} end={0.6}>
-                Made in America. Distinctive designs. Custom-ready product. Licensed categories. PGA TOUR Fan Shop presence. Big-box distribution. Hundreds of pro-shop footholds. The next step is not more random marketing. It is turning those assets into a public story and an operating system.
-              </FillText>
-            </div>
+      {/* 4 — Why Del Campo (editorial) */}
+      <section className="rf-edit" id="why">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>Why Del Campo</Kicker>
+            <h2>The ingredients already exist.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>
+              Made in America. Distinctive designs. Custom-ready product. Licensed categories. PGA TOUR Fan Shop presence. Big-box distribution. Hundreds of
+              pro-shop footholds. A product that can move through DTC, wholesale, custom events, college drops, tournament gifting, and green grass golf.
+            </p>
+            <p className="rf-keyline">The next step is not more random marketing. It is turning those assets into a public brand story and a repeatable operating system.</p>
+          </Reveal>
+          <Reveal delay={0.1}>
             <div className="rf-token-field">
-              {scope.map((item, index) => (
-                <Stagger className="rf-token" index={index} key={item} progress={progress} start={0.3} step={0.04}>
+              {tokens.map((item) => (
+                <span className="rf-token" key={item}>
                   {item}
-                </Stagger>
+                </span>
               ))}
             </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 5 — The Position (editorial) */}
+      <section className="rf-edit" id="position">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>The Position</Kicker>
+            <h2>Premium. Classy. Fun. Recognizable.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>Del Campo should not become another loud golf content brand.</p>
+            <p>
+              It should become the sock brand that feels at home at a top club, a member-guest, a college rivalry weekend, a resort pro shop, and a
+              caddie&apos;s ankles on Sunday afternoon.
+            </p>
+            <p>
+              The tone is not chaos. The tone is golf-native. Confident. Tasteful. A little playful. Built for people who care what they wear, but do not
+              want to look like they are trying too hard.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 5b — Statement (pinned) */}
+      <ScrollScene className="rf-statement-scene" height={1.7}>
+        {(progress) => (
+          <SceneBody progress={progress}>
+            <p className="rf-statement">
+              Del Campo can become for golf socks what needlepoint belts became for golf accessories: <span>a small item that says a lot.</span>
+            </p>
           </SceneBody>
         )}
       </ScrollScene>
 
-      <ScrollScene className="rf-flywheel" height={3.6} id="flywheel">
+      {/* 6 — The Member-Guest Wedge (editorial) */}
+      <section className="rf-edit" id="wedge">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>The Wedge</Kicker>
+            <h2>Start where serious golf already talks.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>
+              The member-guest is one of the most valuable rooms in golf. It brings together club members, guests, business owners, competitive amateurs,
+              local leaders, traveling players, and people who notice what everyone else is wearing.
+            </p>
+            <p>That makes it the perfect wedge for Del Campo.</p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <ImageSlot label="Custom club-logo sock mockup — club logo on the outside, Del Campo wordmark on the inside foot" ratio="3 / 2" />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h3 className="rf-sub">The Play</h3>
+            <ol className="rf-steps">
+              {memberGuestPlay.map((step, i) => (
+                <li key={i}>
+                  <span>{String(i + 1).padStart(2, "0")}</span>
+                  <p>{step}</p>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <p className="rf-keyline rf-keyline--lg">
+              Custom club socks are not just a product. They are a market-entry strategy.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 7 — Brand Memory Detail (editorial) */}
+      <section className="rf-edit" id="memory">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>Brand Memory</Kicker>
+            <h2>The club logo gets them to wear it. The Del Campo name gets them to remember it.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>The smiley can become iconic over time. But today, custom socks need the Del Campo name on them.</p>
+            <p>The club logo creates the reason to wear them. The Del Campo wordmark creates the brand memory. The comfort creates the reorder.</p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <ImageSlot label="Sock detail — club mark + visible Del Campo wordmark + subtle recurring brand cue" ratio="3 / 2" />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h3 className="rf-sub">Every custom country club sock should carry three things</h3>
+            <div className="rf-rule">
+              {productRule.map(([title, body]) => (
+                <div className="rf-rule-card" key={title}>
+                  <strong>{title}</strong>
+                  <p>{body}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 8 — The Pro Shop Standard (editorial) */}
+      <section className="rf-edit" id="proshop">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>Green Grass</Kicker>
+            <h2>The pro shop is not just a sales channel. It is the showroom.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>Del Campo belongs where golfers already browse before and after a round.</p>
+            <p>The goal is not simply to get socks into pro shops. The goal is to make Del Campo look like the premium sock standard inside the pro shop.</p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <ImageSlot label="Pro shop countertop / sock wall display mockup" ratio="16 / 9" />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h3 className="rf-sub">What this looks like</h3>
+            <div className="rf-checklist">
+              {proShopList.map((item) => (
+                <span className="rf-check" key={item}>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <p className="rf-keyline rf-keyline--lg">
+              If the socks look like an afterthought, they sell like an afterthought. Del Campo should own the sock presentation.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 9 — The Media Engine (editorial) */}
+      <section className="rf-edit" id="media">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>Content</Kicker>
+            <h2>Build a classy golf channel, not a bro content house.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>
+              Content is massive in golf, but Del Campo does not need to become Good Good. The opportunity is a more premium, editorial, golf-native content
+              layer: one host, one point of view, and repeatable formats that make Del Campo present inside the culture without cheapening the brand.
+            </p>
+            <p>The product is socks. The story is where those socks show up.</p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <div className="rf-channel">
+              <span className="rf-channel-label">Channel concept</span>
+              <strong>Del Campo Clubhouse</strong>
+              <p>A host-led golf culture channel built around courses, pro shops, caddies, member-guests, college rivalries, and custom sock stories.</p>
+              <ImageSlot className="rf-channel-slot" label="Del Campo Clubhouse — channel still / episode thumbnail" ratio="16 / 9" />
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h3 className="rf-sub">Possible formats</h3>
+            <div className="rf-formats">
+              {formats.map(([title, body]) => (
+                <div className="rf-format" key={title}>
+                  <strong>{title}</strong>
+                  <p>{body}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <p className="rf-keyline rf-keyline--lg">
+              The content should make Del Campo feel like it belongs in serious golf culture. Not above it. Not outside it. Inside it.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 10 — Caddie Visibility (editorial) */}
+      <section className="rf-edit" id="caddie">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>On the Bag</Kicker>
+            <h2>The best sock visibility may not be on players.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>Players often wear pants. Caddies often wear shorts. That makes caddies one of the most natural visibility channels for a golf sock brand.</p>
+            <p>
+              A few high-level caddies wearing recognizable Del Campo socks during tournament play could create more visible brand memory than a larger
+              number of lower-quality influencer posts.
+            </p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <ImageSlot label="Caddie on the bag, tournament setting — Del Campo socks visible with shorts" ratio="16 / 9" />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h3 className="rf-sub">The Play</h3>
+            <ol className="rf-steps">
+              {caddiePlay.map((step, i) => (
+                <li key={i}>
+                  <span>{String(i + 1).padStart(2, "0")}</span>
+                  <p>{step}</p>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <p className="rf-keyline rf-keyline--lg">Caddies are not vanity influencers. They are culture carriers.</p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 11 — College Rivalry Golf (editorial) */}
+      <section className="rf-edit" id="college">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>Young Golf</Kicker>
+            <h2>College golf is a low-cost content and culture wedge.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>College rivalry golf gives Del Campo a way to create tasteful, fun, repeatable content without turning the brand into a circus.</p>
+            <p>It also connects naturally to licensed designs, alumni pride, campus weekends, and younger golfers who still care about what feels cool.</p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <ImageSlot label="College rivalry sock drop — campus colors / matchup" ratio="16 / 9" />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h3 className="rf-sub">Possible plays</h3>
+            <div className="rf-checklist">
+              {collegePlays.map((item) => (
+                <span className="rf-check" key={item}>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <p className="rf-keyline rf-keyline--lg">This is where Del Campo can be young without becoming unserious.</p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 12 — The Growth Flywheel (pinned) */}
+      <ScrollScene className="rf-flywheel" height={4} id="flywheel">
         {(progress) => <GrowthFlywheel progress={progress} />}
       </ScrollScene>
 
-      <ScrollScene className="rf-campaigns" id="campaigns">
-        {(progress) => (
-          <SceneBody progress={progress}>
-            <div className="rf-center-copy">
-              <span className="rf-kicker">The first moves</span>
-              <h2>Campaigns become the operating system.</h2>
-            </div>
-            <div className="rf-campaign-stack">
-              {campaigns.slice(0, 6).map((campaign, index) => (
-                <Stagger
-                  className="rf-campaign"
-                  href={`/app/campaigns/${campaign.id}`}
-                  index={index}
-                  key={campaign.id}
-                  progress={progress}
-                  start={0.26}
-                  step={0.045}
-                >
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <strong>{campaign.title}</strong>
-                  <p>{campaign.thesis}</p>
-                </Stagger>
-              ))}
-            </div>
-          </SceneBody>
-        )}
-      </ScrollScene>
+      {/* 13 — The First Strategic Plays (editorial) */}
+      <section className="rf-edit" id="plays">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>The First Moves</Kicker>
+            <h2>Campaigns become the operating system.</h2>
+          </Reveal>
+          <div className="rf-plays">
+            {plays.map(([title, body], i) => (
+              <Reveal className="rf-play" delay={(i % 2) * 0.05} key={title}>
+                <span>{String(i + 1).padStart(2, "0")}</span>
+                <strong>{title}</strong>
+                <p>{body}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <ScrollScene className="rf-final">
+      {/* 14 — The Operating System (editorial) */}
+      <section className="rf-edit" id="engine">
+        <div className="rf-edit-inner">
+          <Reveal>
+            <Kicker>The Engine</Kicker>
+            <h2>The public story needs a private system behind it.</h2>
+          </Reveal>
+          <Reveal className="rf-edit-body" delay={0.05}>
+            <p>
+              A vision only matters if it can be operated. The Del Campo Growth Engine turns the strategy into a working system: campaigns, relationships,
+              pro-shop accounts, custom sock opportunities, creative briefs, content assets, performance metrics, and AI-assisted next actions.
+            </p>
+            <p className="rf-keyline">This is how Del Campo avoids random marketing. This is how the brand compounds.</p>
+          </Reveal>
+          <div className="rf-modules">
+            {modules.map(([title, body], i) => (
+              <Reveal className="rf-module" delay={(i % 3) * 0.04} key={title}>
+                <strong>{title}</strong>
+                <p>{body}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 15 — Closing (pinned) */}
+      <ScrollScene className="rf-final" height={2.1}>
         {(progress) => (
           <SceneBody progress={progress}>
             <div className="rf-center-copy">
-              <span className="rf-kicker">The where</span>
-              <h2>
-                From small sock brand to golf&apos;s
-                <br />
-                most recognizable sock company.
-              </h2>
-              <FillText progress={progress} start={0.2} end={0.58}>
-                The vision is a public brand story backed by a practical marketing system: DTC drops, custom and event revenue, pro-shop distribution, relationship proof, creative production, performance targets, and AI-assisted operations.
-              </FillText>
-              <Stagger className="rf-cta-wrap" index={0} progress={progress} start={0.56} step={0}>
+              <Kicker>The Where</Kicker>
+              <h2>From small sock brand to golf&apos;s most recognizable sock company.</h2>
+              <Lines
+                items={[
+                  "The path is not to become louder. The path is to become more present.",
+                  "Present in the pro shop. Present at the member-guest. Present on the caddie. Present in the college rivalry. Present in the custom tee gift. Present in the content serious golfers actually respect.",
+                  "Del Campo already has the product. The next step is the system."
+                ]}
+                progress={progress}
+                start={0.2}
+                step={0.07}
+              />
+              <Stagger className="rf-cta-wrap" index={0} progress={progress} start={0.62} step={0}>
                 <a className="rf-cta" href="/app/command-center">
                   Enter the Growth Command Center <ArrowRight size={20} />
                 </a>
