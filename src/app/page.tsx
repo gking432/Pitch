@@ -4,8 +4,6 @@ import { useRef, useState } from "react";
 import { motion, MotionValue, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-
 /* ------------------------------------------------------------------ */
 /* Pinned scene infrastructure (cinematic "page holds still" moments)  */
 /* ------------------------------------------------------------------ */
@@ -100,20 +98,77 @@ function Lines({
 }
 
 /* ------------------------------------------------------------------ */
-/* Editorial infrastructure (large scroll sections, reveal on view)    */
+/* Reveal scene: a PINNED section whose heading holds while the body    */
+/* reveals one block at a time as you scroll, then hands to the next.   */
 /* ------------------------------------------------------------------ */
 
-function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+function RevealBlock({
+  index,
+  total,
+  progress,
+  children
+}: {
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
+  children: React.ReactNode;
+}) {
+  const lo = 0.1;
+  const hi = 0.96;
+  const seg = (hi - lo) / total;
+  const s = lo + index * seg;
+  const isLast = index === total - 1;
+  const opacity = useTransform(
+    progress,
+    isLast ? [s, s + seg * 0.32, 1, 1] : [s, s + seg * 0.32, s + seg * 0.84, s + seg],
+    isLast ? [0, 1, 1, 1] : [0, 1, 1, 0]
+  );
+  const y = useTransform(progress, [s, s + seg * 0.32], [30, 0]);
+  const filter = useTransform(progress, [s, s + seg * 0.32], ["blur(6px)", "blur(0px)"]);
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 38 }}
-      transition={{ duration: 0.6, ease: EASE, delay }}
-      viewport={{ once: true, margin: "-12% 0px" }}
-      whileInView={{ opacity: 1, y: 0 }}
-    >
+    <motion.div className="rf-rs-block" style={{ opacity, y, filter }}>
       {children}
     </motion.div>
+  );
+}
+
+function RevealScene({
+  id,
+  className = "",
+  kicker,
+  heading,
+  blocks
+}: {
+  id?: string;
+  className?: string;
+  kicker: React.ReactNode;
+  heading: React.ReactNode;
+  blocks: React.ReactNode[];
+}) {
+  const n = blocks.length;
+  const height = Math.min(1.2 + n * 0.55, 4.4);
+  return (
+    <ScrollScene className={`rf-rs-scene ${className}`} height={height} id={id}>
+      {(progress) => {
+        const headOpacity = useTransform(progress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]);
+        const headY = useTransform(progress, [0, 0.05, 0.95, 1], [34, 0, 0, -34]);
+        return (
+          <div className="rf-rs">
+            <motion.div className="rf-rs-head" style={{ opacity: headOpacity, y: headY }}>
+              <Kicker>{kicker}</Kicker>
+              <h2>{heading}</h2>
+            </motion.div>
+            <div className="rf-rs-stage">
+              {blocks.map((block, i) => (
+                <RevealBlock index={i} key={i} progress={progress} total={n}>
+                  {block}
+                </RevealBlock>
+              ))}
+            </div>
+          </div>
+        );
+      }}
+    </ScrollScene>
   );
 }
 
@@ -464,74 +519,63 @@ export default function Home() {
         )}
       </ScrollScene>
 
-      {/* 3 — The Opening (editorial) */}
-      <section className="rf-edit" id="opening">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>The Opening</Kicker>
-            <h2>Golf upgraded everything but the sock drawer.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
-            <p className="rf-lead">Clubs became technology. Shoes became performance. Polos became identity. Hats became collectable. Needlepoint belts became a signal.</p>
-            <p>
-              Socks still sit underneath the category, even though they are visible, giftable, customizable, affordable, and perfect for the places golf
-              culture actually spreads: pro shops, member-guests, tournaments, college rivalries, corporate golf, caddie yards, and buddy trips.
-            </p>
-            <p className="rf-keyline">That gap is the opening.</p>
-            <p>
-              Del Campo does not need to invent a new behavior. Golfers already wear socks. The job is to make Del Campo the pair they recognize, talk
-              about, gift, reorder, and look for in the shop.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+      {/* 3 — The Opening */}
+      <RevealScene
+        id="opening"
+        kicker="The Opening"
+        heading="Golf upgraded everything but the sock drawer."
+        blocks={[
+          <p className="rf-lead" key="a">Clubs became technology. Shoes became performance. Polos became identity. Hats became collectable. Needlepoint belts became a signal.</p>,
+          <p key="b">
+            Socks still sit underneath the category, even though they are visible, giftable, customizable, affordable, and perfect for the places golf
+            culture actually spreads: pro shops, member-guests, tournaments, college rivalries, corporate golf, caddie yards, and buddy trips.
+          </p>,
+          <p className="rf-keyline rf-keyline--lg" key="c">That gap is the opening.</p>,
+          <p key="d">
+            Del Campo does not need to invent a new behavior. Golfers already wear socks. The job is to make Del Campo the pair they recognize, talk about,
+            gift, reorder, and look for in the shop.
+          </p>
+        ]}
+      />
 
-      {/* 4 — Why Del Campo (editorial) */}
-      <section className="rf-edit" id="why">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>Why Del Campo</Kicker>
-            <h2>The ingredients already exist.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
-            <p>
-              Made in America. Distinctive designs. Custom-ready product. Licensed categories. PGA TOUR Fan Shop presence. Big-box distribution. Hundreds of
-              pro-shop footholds. A product that can move through DTC, wholesale, custom events, college drops, tournament gifting, and green grass golf.
-            </p>
-            <p className="rf-keyline">The next step is not more random marketing. It is turning those assets into a public brand story and a repeatable operating system.</p>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="rf-token-field">
-              {tokens.map((item) => (
-                <span className="rf-token" key={item}>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      {/* 4 — Why Del Campo */}
+      <RevealScene
+        id="why"
+        kicker="Why Del Campo"
+        heading="The ingredients already exist."
+        blocks={[
+          <p key="a">
+            Made in America. Distinctive designs. Custom-ready product. Licensed categories. PGA TOUR Fan Shop presence. Big-box distribution. Hundreds of
+            pro-shop footholds. A product that can move through DTC, wholesale, custom events, college drops, tournament gifting, and green grass golf.
+          </p>,
+          <p className="rf-keyline rf-keyline--lg" key="b">The next step is not more random marketing. It is turning those assets into a public brand story and a repeatable operating system.</p>,
+          <div className="rf-token-field" key="c">
+            {tokens.map((item) => (
+              <span className="rf-token" key={item}>
+                {item}
+              </span>
+            ))}
+          </div>
+        ]}
+      />
 
-      {/* 5 — The Position (editorial) */}
-      <section className="rf-edit" id="position">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>The Position</Kicker>
-            <h2>Premium. Classy. Fun. Recognizable.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
-            <p>Del Campo should not become another loud golf content brand.</p>
-            <p>
-              It should become the sock brand that feels at home at a top club, a member-guest, a college rivalry weekend, a resort pro shop, and a
-              caddie&apos;s ankles on Sunday afternoon.
-            </p>
-            <p>
-              The tone is not chaos. The tone is golf-native. Confident. Tasteful. A little playful. Built for people who care what they wear, but do not
-              want to look like they are trying too hard.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+      {/* 5 — The Position */}
+      <RevealScene
+        id="position"
+        kicker="The Position"
+        heading="Premium. Classy. Fun. Recognizable."
+        blocks={[
+          <p key="a">Del Campo should not become another loud golf content brand.</p>,
+          <p key="b">
+            It should become the sock brand that feels at home at a top club, a member-guest, a college rivalry weekend, a resort pro shop, and a
+            caddie&apos;s ankles on Sunday afternoon.
+          </p>,
+          <p key="c">
+            The tone is not chaos. The tone is golf-native. Confident. Tasteful. A little playful. Built for people who care what they wear, but do not want
+            to look like they are trying too hard.
+          </p>
+        ]}
+      />
 
       {/* 5b — Statement (pinned) */}
       <ScrollScene className="rf-statement-scene" height={1.7}>
@@ -544,24 +588,21 @@ export default function Home() {
         )}
       </ScrollScene>
 
-      {/* 6 — The Member-Guest Wedge (editorial) */}
-      <section className="rf-edit" id="wedge">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>The Wedge</Kicker>
-            <h2>Start where serious golf already talks.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
+      {/* 6 — The Member-Guest Wedge */}
+      <RevealScene
+        id="wedge"
+        kicker="The Wedge"
+        heading="Start where serious golf already talks."
+        blocks={[
+          <div className="rf-block-text" key="a">
             <p>
               The member-guest is one of the most valuable rooms in golf. It brings together club members, guests, business owners, competitive amateurs,
               local leaders, traveling players, and people who notice what everyone else is wearing.
             </p>
             <p>That makes it the perfect wedge for Del Campo.</p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <ImageSlot label="Custom club-logo sock mockup — club logo on the outside, Del Campo wordmark on the inside foot" ratio="3 / 2" />
-          </Reveal>
-          <Reveal delay={0.1}>
+          </div>,
+          <ImageSlot key="b" label="Custom club-logo sock mockup — club logo on the outside, Del Campo wordmark on the inside foot" ratio="3 / 2" />,
+          <div key="c">
             <h3 className="rf-sub">The Play</h3>
             <ol className="rf-steps">
               {memberGuestPlay.map((step, i) => (
@@ -571,30 +612,23 @@ export default function Home() {
                 </li>
               ))}
             </ol>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <p className="rf-keyline rf-keyline--lg">
-              Custom club socks are not just a product. They are a market-entry strategy.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+          </div>,
+          <p className="rf-keyline rf-keyline--lg" key="d">Custom club socks are not just a product. They are a market-entry strategy.</p>
+        ]}
+      />
 
-      {/* 7 — Brand Memory Detail (editorial) */}
-      <section className="rf-edit" id="memory">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>Brand Memory</Kicker>
-            <h2>The club logo gets them to wear it. The Del Campo name gets them to remember it.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
+      {/* 7 — Brand Memory Detail */}
+      <RevealScene
+        id="memory"
+        kicker="Brand Memory"
+        heading="The club logo gets them to wear it. The Del Campo name gets them to remember it."
+        blocks={[
+          <div className="rf-block-text" key="a">
             <p>The smiley can become iconic over time. But today, custom socks need the Del Campo name on them.</p>
             <p>The club logo creates the reason to wear them. The Del Campo wordmark creates the brand memory. The comfort creates the reorder.</p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <ImageSlot label="Sock detail — club mark + visible Del Campo wordmark + subtle recurring brand cue" ratio="3 / 2" />
-          </Reveal>
-          <Reveal delay={0.1}>
+          </div>,
+          <ImageSlot key="b" label="Sock detail — club mark + visible Del Campo wordmark + subtle recurring brand cue" ratio="3 / 2" />,
+          <div key="c">
             <h3 className="rf-sub">Every custom country club sock should carry three things</h3>
             <div className="rf-rule">
               {productRule.map(([title, body]) => (
@@ -604,25 +638,22 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </Reveal>
-        </div>
-      </section>
+          </div>
+        ]}
+      />
 
-      {/* 8 — The Pro Shop Standard (editorial) */}
-      <section className="rf-edit" id="proshop">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>Green Grass</Kicker>
-            <h2>The pro shop is not just a sales channel. It is the showroom.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
+      {/* 8 — The Pro Shop Standard */}
+      <RevealScene
+        id="proshop"
+        kicker="Green Grass"
+        heading="The pro shop is not just a sales channel. It is the showroom."
+        blocks={[
+          <div className="rf-block-text" key="a">
             <p>Del Campo belongs where golfers already browse before and after a round.</p>
             <p>The goal is not simply to get socks into pro shops. The goal is to make Del Campo look like the premium sock standard inside the pro shop.</p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <ImageSlot label="Pro shop countertop / sock wall display mockup" ratio="16 / 9" />
-          </Reveal>
-          <Reveal delay={0.1}>
+          </div>,
+          <ImageSlot key="b" label="Pro shop countertop / sock wall display mockup" ratio="16 / 9" />,
+          <div key="c">
             <h3 className="rf-sub">What this looks like</h3>
             <div className="rf-checklist">
               {proShopList.map((item) => (
@@ -631,38 +662,31 @@ export default function Home() {
                 </span>
               ))}
             </div>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <p className="rf-keyline rf-keyline--lg">
-              If the socks look like an afterthought, they sell like an afterthought. Del Campo should own the sock presentation.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+          </div>,
+          <p className="rf-keyline rf-keyline--lg" key="d">If the socks look like an afterthought, they sell like an afterthought. Del Campo should own the sock presentation.</p>
+        ]}
+      />
 
-      {/* 9 — The Media Engine (editorial) */}
-      <section className="rf-edit" id="media">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>Content</Kicker>
-            <h2>Build a classy golf channel, not a bro content house.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
+      {/* 9 — The Media Engine */}
+      <RevealScene
+        id="media"
+        kicker="Content"
+        heading="Build a classy golf channel, not a bro content house."
+        blocks={[
+          <div className="rf-block-text" key="a">
             <p>
               Content is massive in golf, but Del Campo does not need to become Good Good. The opportunity is a more premium, editorial, golf-native content
               layer: one host, one point of view, and repeatable formats that make Del Campo present inside the culture without cheapening the brand.
             </p>
             <p>The product is socks. The story is where those socks show up.</p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <div className="rf-channel">
-              <span className="rf-channel-label">Channel concept</span>
-              <strong>Del Campo Clubhouse</strong>
-              <p>A host-led golf culture channel built around courses, pro shops, caddies, member-guests, college rivalries, and custom sock stories.</p>
-              <ImageSlot className="rf-channel-slot" label="Del Campo Clubhouse — channel still / episode thumbnail" ratio="16 / 9" />
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
+          </div>,
+          <div className="rf-channel" key="b">
+            <span className="rf-channel-label">Channel concept</span>
+            <strong>Del Campo Clubhouse</strong>
+            <p>A host-led golf culture channel built around courses, pro shops, caddies, member-guests, college rivalries, and custom sock stories.</p>
+            <ImageSlot className="rf-channel-slot" label="Del Campo Clubhouse — channel still / episode thumbnail" ratio="16 / 9" />
+          </div>,
+          <div key="c">
             <h3 className="rf-sub">Possible formats</h3>
             <div className="rf-formats">
               {formats.map(([title, body]) => (
@@ -672,33 +696,26 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <p className="rf-keyline rf-keyline--lg">
-              The content should make Del Campo feel like it belongs in serious golf culture. Not above it. Not outside it. Inside it.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+          </div>,
+          <p className="rf-keyline rf-keyline--lg" key="d">The content should make Del Campo feel like it belongs in serious golf culture. Not above it. Not outside it. Inside it.</p>
+        ]}
+      />
 
-      {/* 10 — Caddie Visibility (editorial) */}
-      <section className="rf-edit" id="caddie">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>On the Bag</Kicker>
-            <h2>The best sock visibility may not be on players.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
+      {/* 10 — Caddie Visibility */}
+      <RevealScene
+        id="caddie"
+        kicker="On the Bag"
+        heading="The best sock visibility may not be on players."
+        blocks={[
+          <div className="rf-block-text" key="a">
             <p>Players often wear pants. Caddies often wear shorts. That makes caddies one of the most natural visibility channels for a golf sock brand.</p>
             <p>
               A few high-level caddies wearing recognizable Del Campo socks during tournament play could create more visible brand memory than a larger
               number of lower-quality influencer posts.
             </p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <ImageSlot label="Caddie on the bag, tournament setting — Del Campo socks visible with shorts" ratio="16 / 9" />
-          </Reveal>
-          <Reveal delay={0.1}>
+          </div>,
+          <ImageSlot key="b" label="Caddie on the bag, tournament setting — Del Campo socks visible with shorts" ratio="16 / 9" />,
+          <div key="c">
             <h3 className="rf-sub">The Play</h3>
             <ol className="rf-steps">
               {caddiePlay.map((step, i) => (
@@ -708,28 +725,23 @@ export default function Home() {
                 </li>
               ))}
             </ol>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <p className="rf-keyline rf-keyline--lg">Caddies are not vanity influencers. They are culture carriers.</p>
-          </Reveal>
-        </div>
-      </section>
+          </div>,
+          <p className="rf-keyline rf-keyline--lg" key="d">Caddies are not vanity influencers. They are culture carriers.</p>
+        ]}
+      />
 
-      {/* 11 — College Rivalry Golf (editorial) */}
-      <section className="rf-edit" id="college">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>Young Golf</Kicker>
-            <h2>College golf is a low-cost content and culture wedge.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
+      {/* 11 — College Rivalry Golf */}
+      <RevealScene
+        id="college"
+        kicker="Young Golf"
+        heading="College golf is a low-cost content and culture wedge."
+        blocks={[
+          <div className="rf-block-text" key="a">
             <p>College rivalry golf gives Del Campo a way to create tasteful, fun, repeatable content without turning the brand into a circus.</p>
             <p>It also connects naturally to licensed designs, alumni pride, campus weekends, and younger golfers who still care about what feels cool.</p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <ImageSlot label="College rivalry sock drop — campus colors / matchup" ratio="16 / 9" />
-          </Reveal>
-          <Reveal delay={0.1}>
+          </div>,
+          <ImageSlot key="b" label="College rivalry sock drop — campus colors / matchup" ratio="16 / 9" />,
+          <div key="c">
             <h3 className="rf-sub">Possible plays</h3>
             <div className="rf-checklist">
               {collegePlays.map((item) => (
@@ -738,61 +750,57 @@ export default function Home() {
                 </span>
               ))}
             </div>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <p className="rf-keyline rf-keyline--lg">This is where Del Campo can be young without becoming unserious.</p>
-          </Reveal>
-        </div>
-      </section>
+          </div>,
+          <p className="rf-keyline rf-keyline--lg" key="d">This is where Del Campo can be young without becoming unserious.</p>
+        ]}
+      />
 
       {/* 12 — The Growth Flywheel (pinned) */}
       <ScrollScene className="rf-flywheel" height={4} id="flywheel">
         {(progress) => <GrowthFlywheel progress={progress} />}
       </ScrollScene>
 
-      {/* 13 — The First Strategic Plays (editorial) */}
-      <section className="rf-edit" id="plays">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>The First Moves</Kicker>
-            <h2>Campaigns become the operating system.</h2>
-          </Reveal>
-          <div className="rf-plays">
+      {/* 13 — The First Strategic Plays */}
+      <RevealScene
+        id="plays"
+        kicker="The First Moves"
+        heading="Campaigns become the operating system."
+        blocks={[
+          <div className="rf-plays" key="a">
             {plays.map(([title, body], i) => (
-              <Reveal className="rf-play" delay={(i % 2) * 0.05} key={title}>
+              <div className="rf-play" key={title}>
                 <span>{String(i + 1).padStart(2, "0")}</span>
                 <strong>{title}</strong>
                 <p>{body}</p>
-              </Reveal>
+              </div>
             ))}
           </div>
-        </div>
-      </section>
+        ]}
+      />
 
-      {/* 14 — The Operating System (editorial) */}
-      <section className="rf-edit" id="engine">
-        <div className="rf-edit-inner">
-          <Reveal>
-            <Kicker>The Engine</Kicker>
-            <h2>The public story needs a private system behind it.</h2>
-          </Reveal>
-          <Reveal className="rf-edit-body" delay={0.05}>
+      {/* 14 — The Operating System */}
+      <RevealScene
+        id="engine"
+        kicker="The Engine"
+        heading="The public story needs a private system behind it."
+        blocks={[
+          <div className="rf-block-text" key="a">
             <p>
               A vision only matters if it can be operated. The Del Campo Growth Engine turns the strategy into a working system: campaigns, relationships,
               pro-shop accounts, custom sock opportunities, creative briefs, content assets, performance metrics, and AI-assisted next actions.
             </p>
             <p className="rf-keyline">This is how Del Campo avoids random marketing. This is how the brand compounds.</p>
-          </Reveal>
-          <div className="rf-modules">
-            {modules.map(([title, body], i) => (
-              <Reveal className="rf-module" delay={(i % 3) * 0.04} key={title}>
+          </div>,
+          <div className="rf-modules" key="b">
+            {modules.map(([title, body]) => (
+              <div className="rf-module" key={title}>
                 <strong>{title}</strong>
                 <p>{body}</p>
-              </Reveal>
+              </div>
             ))}
           </div>
-        </div>
-      </section>
+        ]}
+      />
 
       {/* 15 — Closing (pinned) */}
       <ScrollScene className="rf-final" height={2.1}>
