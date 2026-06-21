@@ -161,39 +161,41 @@ const stats = [
 
 const PILLARS = ["Events", "Green Grass", "Ambassadors", "Content", "Retail"];
 
-/* Large pillar nodes: scattered network position [x%, y%] -> top-bar slot. */
+/* Large pillar nodes: a gentle left-to-right network position [x%, y%]
+   that collapses into evenly spaced top-bar slots. */
 const engineNodes = [
-  { label: "Events", accent: "var(--rf-neon)", net: [20, 40], size: 104 },
-  { label: "Green Grass", accent: "var(--rf-gold)", net: [50, 62], size: 116 },
-  { label: "Ambassadors", accent: "var(--rf-teal)", net: [76, 34], size: 108 },
-  { label: "Content", accent: "var(--rf-coral)", net: [34, 76], size: 96 },
-  { label: "Retail", accent: "var(--rf-neon)", net: [84, 70], size: 100 }
+  { label: "Events", net: [15, 50], size: 96 },
+  { label: "Green Grass", net: [35, 30], size: 108 },
+  { label: "Ambassadors", net: [52, 62], size: 100 },
+  { label: "Content", net: [70, 34], size: 92 },
+  { label: "Retail", net: [86, 56], size: 96 }
 ];
 
-/* Smaller supporting nodes that live behind the five and fade on morph. */
+/* Small supporting dots that sit behind the five and fade on morph. */
 const subNodes = [
-  { label: "Member-guests", parent: 0, net: [8, 24], size: 52 },
-  { label: "Tournaments", parent: 0, net: [10, 56], size: 44 },
-  { label: "Outings", parent: 0, net: [30, 18], size: 42 },
-  { label: "Pro shops", parent: 1, net: [44, 84], size: 50 },
-  { label: "Reorders", parent: 1, net: [62, 80], size: 42 },
-  { label: "Caddies", parent: 2, net: [90, 16], size: 48 },
-  { label: "College", parent: 2, net: [70, 14], size: 44 },
-  { label: "Creators", parent: 3, net: [20, 90], size: 44 },
-  { label: "Course stories", parent: 3, net: [46, 92], size: 42 },
-  { label: "DTC", parent: 4, net: [95, 48], size: 42 },
-  { label: "Wholesale", parent: 4, net: [94, 86], size: 44 },
-  { label: "Fan Shop", parent: 4, net: [72, 84], size: 44 }
+  { parent: 0, net: [5, 36], size: 32 },
+  { parent: 0, net: [9, 66], size: 26 },
+  { parent: 1, net: [30, 13], size: 28 },
+  { parent: 2, net: [45, 82], size: 28 },
+  { parent: 3, net: [64, 16], size: 26 },
+  { parent: 3, net: [80, 15], size: 28 },
+  { parent: 4, net: [95, 38], size: 26 },
+  { parent: 4, net: [92, 74], size: 30 }
 ];
 
-/* Chain links between the five large nodes. */
-const engineLinks = [
+/* The chain that becomes the timeline rail (always on). */
+const railLinks = [
   [0, 1],
   [1, 2],
+  [2, 3],
+  [3, 4]
+];
+
+/* Extra mesh links that fade out as the network collapses. */
+const meshLinks = [
+  [0, 2],
   [1, 3],
-  [2, 4],
-  [3, 4],
-  [0, 3]
+  [2, 4]
 ];
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -443,18 +445,20 @@ function PillarTimeline({ index, animate, progress }: { index: number; animate: 
    together, drift up into an evenly spaced row as you scroll. */
 function EngineNetwork({ progress }: { progress: MotionValue<number> }) {
   // 0 = full network, 1 = collapsed into the top bar.
-  const morph = useTransform(progress, [0.42, 0.74], [0, 1]);
+  const morph = useTransform(progress, [0.4, 0.82], [0, 1]);
 
-  const headOpacity = useTransform(progress, [0.02, 0.1, 0.7, 0.78], [0, 1, 1, 0]);
-  const subOpacity = useTransform(progress, [0.12, 0.22, 0.42, 0.52], [0, 1, 1, 0]);
-  const lineOpacity = useTransform(progress, [0.1, 0.2, 0.5, 0.64], [0, 0.5, 0.5, 0]);
-  const captionOpacity = useTransform(progress, [0.78, 0.86, 0.95, 1], [0, 1, 1, 0]);
+  // Heading clears out before the nodes rise into its space.
+  const headOpacity = useTransform(progress, [0.03, 0.12, 0.46, 0.56], [0, 1, 1, 0]);
+  // Supporting dots + mesh fade as the network tightens; the rail stays.
+  const subOpacity = useTransform(progress, [0.12, 0.22, 0.42, 0.56], [0, 1, 1, 0]);
+  const meshOpacity = useTransform(progress, [0.12, 0.22, 0.42, 0.56], [0, 0.4, 0.4, 0]);
+  const railOpacity = useTransform(progress, [0.08, 0.2], [0, 1]);
 
-  // Per-node live centers (in 0..100 space) so the wiring follows the morph.
-  const barY = 14;
-  const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], 8 + i * 21, m)));
+  // Target row matches the pillar timeline: centers at 10/30/50/70/90%.
+  const barY = 13;
+  const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], 10 + i * 20, m)));
   const nodeY = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.net[1], barY, m)));
-  const nodeSize = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 30, m)));
+  const nodeSize = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 26, m)));
   const nodeAppear = engineNodes.map((_, i) => useTransform(progress, [0.04 + i * 0.025, 0.16 + i * 0.025], [0, 1]));
 
   return (
@@ -466,25 +470,25 @@ function EngineNetwork({ progress }: { progress: MotionValue<number> }) {
       </motion.div>
 
       <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
-        {/* large-to-large links */}
-        {engineLinks.map(([a, b], i) => (
+        {/* mesh links — fade out */}
+        {meshLinks.map(([a, b], i) => (
           <motion.line
-            key={`l${i}`}
-            stroke="var(--rf-cream)"
-            strokeWidth={0.18}
-            style={{ opacity: lineOpacity }}
+            key={`m${i}`}
+            stroke="var(--rf-line)"
+            strokeWidth={0.14}
+            style={{ opacity: meshOpacity }}
             x1={nodeX[a]}
             x2={nodeX[b]}
             y1={nodeY[a]}
             y2={nodeY[b]}
           />
         ))}
-        {/* sub-to-parent links */}
+        {/* sub-to-parent links — fade out */}
         {subNodes.map((s, i) => (
           <motion.line
             key={`s${i}`}
-            stroke="var(--rf-cream)"
-            strokeWidth={0.14}
+            stroke="var(--rf-line)"
+            strokeWidth={0.12}
             style={{ opacity: subOpacity }}
             x1={s.net[0]}
             x2={nodeX[s.parent]}
@@ -492,23 +496,28 @@ function EngineNetwork({ progress }: { progress: MotionValue<number> }) {
             y2={nodeY[s.parent]}
           />
         ))}
+        {/* rail links — become the timeline connector */}
+        {railLinks.map(([a, b], i) => (
+          <motion.line
+            key={`r${i}`}
+            stroke="var(--rf-line)"
+            strokeWidth={0.22}
+            style={{ opacity: railOpacity }}
+            x1={nodeX[a]}
+            x2={nodeX[b]}
+            y1={nodeY[a]}
+            y2={nodeY[b]}
+          />
+        ))}
       </svg>
 
-      {/* supporting nodes */}
+      {/* supporting dots */}
       {subNodes.map((s, i) => (
-        <motion.div
+        <motion.span
           className="rf-net-sub"
-          key={s.label}
-          style={{
-            left: `${s.net[0]}%`,
-            top: `${s.net[1]}%`,
-            width: s.size,
-            height: s.size,
-            opacity: subOpacity
-          }}
-        >
-          <span>{s.label}</span>
-        </motion.div>
+          key={`sub${i}`}
+          style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, width: s.size, height: s.size, opacity: subOpacity }}
+        />
       ))}
 
       {/* the five pillar nodes */}
@@ -522,14 +531,10 @@ function EngineNetwork({ progress }: { progress: MotionValue<number> }) {
             opacity: nodeAppear[i]
           }}
         >
-          <motion.span className="rf-net-disc" style={{ width: nodeSize[i], height: nodeSize[i], background: n.accent }} />
+          <motion.span className="rf-net-disc" style={{ width: nodeSize[i], height: nodeSize[i] }} />
           <span className="rf-net-label">{n.label}</span>
         </motion.div>
       ))}
-
-      <motion.p className="rf-net-caption" style={{ opacity: captionOpacity }}>
-        Scroll the five pillars below.
-      </motion.p>
     </div>
   );
 }

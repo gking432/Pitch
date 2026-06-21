@@ -2013,63 +2013,40 @@ html {
 }
 
 .rf-net-sub {
-  align-items: center;
-  background: rgba(255, 248, 232, 0.06);
-  border: 1px solid var(--rf-line);
+  background: var(--rf-panel);
+  border: 2px solid var(--rf-line);
   border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  padding: 4px;
+  display: block;
   position: absolute;
-  text-align: center;
   transform: translate(-50%, -50%);
   z-index: 2;
 }
 
-.rf-net-sub span {
-  color: var(--rf-muted);
-  font-size: clamp(0.5rem, 0.85vw, 0.72rem);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.05;
-}
-
 .rf-net-node {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 4;
 }
 
 .rf-net-disc {
-  border: 3px solid #0b1f10;
+  background: var(--rf-panel);
+  border: 2px solid var(--rf-line);
   border-radius: 50%;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
   display: block;
 }
 
 .rf-net-label {
-  color: var(--rf-cream);
-  font-size: clamp(0.72rem, 1.2vw, 1rem);
-  font-weight: 850;
-  letter-spacing: 0.04em;
-  margin-top: 8px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.rf-net-caption {
-  bottom: 1%;
   color: var(--rf-muted);
-  font-size: 0.74rem;
+  font-size: clamp(0.62rem, 1vw, 0.78rem);
+  font-weight: 850;
   left: 50%;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.07em;
   position: absolute;
+  text-align: center;
   text-transform: uppercase;
+  top: calc(100% + 8px);
   transform: translateX(-50%);
-  z-index: 5;
+  white-space: nowrap;
 }
 
 /* Image placeholders (legacy, unused) */
