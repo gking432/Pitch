@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion, MotionValue, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /* Scene infrastructure                                                */
@@ -116,20 +116,6 @@ function DocScene({
         </div>
       )}
     </ScrollScene>
-  );
-}
-
-/* Hero title: chunky, all-caps, oversized first letter on each word. */
-function ChunkyTitle({ words }: { words: string[] }) {
-  return (
-    <h1 className="rf-chunk">
-      {words.map((w, i) => (
-        <span className="rf-chunk-word" key={i}>
-          <span className="rf-cap">{w.charAt(0)}</span>
-          {w.slice(1)}
-        </span>
-      ))}
-    </h1>
   );
 }
 
@@ -519,35 +505,26 @@ export default function Home() {
 
       {/* 1 — Hero */}
       <ScrollScene className="rf-hero" height={1.9} id="top">
-        {(progress) => {
-          const cueOpacity = useTransform(progress, [0, 0.16, 0.3], [1, 0.6, 0]);
-          return (
-            <>
-              <div className="rf-doc rf-hero-doc">
-                <Reveal index={0} progress={progress}>
-                  <Kicker>Born on a Florida muni · Made in the USA</Kicker>
-                </Reveal>
-                <Reveal index={1} progress={progress}>
-                  <ChunkyTitle words={["Own", "The", "Sock", "Drawer"]} />
-                </Reveal>
-                <Lines
-                  base={0.3}
-                  items={[
-                    "Golf upgraded the clubs, the shoes, the polos, the hats, the belts, the bags, and the watches.",
-                    "But every golfer still reaches into the same overlooked drawer before they play.",
-                    "Del Campo turns that drawer into a position: premium, fun, recognizable golf socks for pro shops, member-guests, caddie yards, and the best clubs in America.",
-                    "Not a plan to chase attention. A plan to earn presence where golf already trusts what it wears."
-                  ]}
-                  progress={progress}
-                />
-              </div>
-              <motion.div className="rf-scroll" style={{ opacity: cueOpacity }}>
-                <span>Scroll</span>
-                <ChevronDown size={20} />
-              </motion.div>
-            </>
-          );
-        }}
+        {(progress) => (
+          <div className="rf-doc rf-hero-doc">
+            <Reveal index={0} progress={progress}>
+              <Kicker>Born on a Florida muni · Made in the USA</Kicker>
+            </Reveal>
+            <Reveal index={1} progress={progress}>
+              <h1 className="rf-hero-title">Own the Sock Drawer.</h1>
+            </Reveal>
+            <Lines
+              base={0.3}
+              items={[
+                "Golf upgraded the clubs, the shoes, the polos, the hats, the belts, the bags, and the watches.",
+                "But every golfer still reaches into the same overlooked drawer before they play.",
+                "Del Campo turns that drawer into a position: premium, fun, recognizable golf socks for pro shops, member-guests, caddie yards, and the best clubs in America.",
+                "Not a plan to chase attention. A plan to earn presence where golf already trusts what it wears."
+              ]}
+              progress={progress}
+            />
+          </div>
+        )}
       </ScrollScene>
 
       {/* 2 — The State of Golf */}

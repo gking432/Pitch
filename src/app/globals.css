@@ -1611,30 +1611,25 @@ html {
   text-align: center;
 }
 
-.rf-chunk {
-  color: var(--rf-cream);
-  display: flex;
-  flex-wrap: wrap;
-  font-size: clamp(3.4rem, 10vw, 8rem);
-  font-weight: 950;
-  gap: 0 0.26em;
-  justify-content: center;
-  letter-spacing: -0.06em;
-  line-height: 0.82;
-  margin: 4px 0 0;
-  text-transform: uppercase;
+.rf-page .rf-hero .rf-hero-title {
+  font-size: clamp(3.2rem, 8.4vw, 6.6rem);
+  font-weight: 900;
+  letter-spacing: -0.065em;
+  line-height: 0.86;
+  margin: 4px auto 0;
+  max-width: 13ch;
 }
 
-.rf-chunk-word {
-  align-items: baseline;
-  display: inline-flex;
+/* State of Golf — centered, large heading */
+.rf-state .rf-doc {
+  align-items: center;
+  text-align: center;
 }
 
-.rf-cap {
-  color: var(--rf-neon);
-  font-size: 1.32em;
-  line-height: 0.7;
-  margin-right: 0.01em;
+.rf-state .rf-doc-head h2 {
+  font-size: clamp(2.6rem, 5.4vw, 5rem);
+  line-height: 0.88;
+  max-width: 24ch;
 }
 
 /* ---------------- Hero / closing lines ---------------- */
