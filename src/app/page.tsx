@@ -149,69 +149,96 @@ function Lines({
 }
 
 /* ------------------------------------------------------------------ */
-/* Loud full-screen statement slides — huge words that slam in from    */
-/* alternating sides on scroll, on a black or green field. The deck's   */
-/* transition moments.                                                  */
+/* Burst statement slides — a pinpoint circle in the center grows on    */
+/* scroll until it floods the screen with color; the heading then slams  */
+/* in from the sides with a smaller line beneath. On the way out it      */
+/* runs in reverse: text retreats, circle collapses back to a point.     */
+/* Used for the hero and every transition moment.                        */
 /* ------------------------------------------------------------------ */
 
-type LoudLine = { text: string; accent?: boolean };
+type BurstLineData = { text: string; accent?: boolean };
 
-function LoudStatement({
+function BurstStatement({
   id,
-  kicker,
-  lines,
   theme = "black",
-  height = 2.4
+  kicker,
+  heading,
+  sub,
+  height = 2.6
 }: {
   id?: string;
+  theme?: "black" | "green" | "lime";
   kicker?: React.ReactNode;
-  lines: LoudLine[];
-  theme?: "black" | "green";
+  heading: BurstLineData[];
+  sub?: React.ReactNode;
   height?: number;
 }) {
   return (
-    <ScrollScene className={`rf-loud rf-loud--${theme}`} height={height} id={id}>
-      {(progress) => (
-        <div className="rf-loud-inner">
-          {kicker ? <LoudKicker progress={progress}>{kicker}</LoudKicker> : null}
-          {lines.map((line, i) => (
-            <LoudWord index={i} key={i} line={line} progress={progress} total={lines.length} />
-          ))}
-        </div>
-      )}
+    <ScrollScene className={`rf-burst rf-burst--${theme}`} height={height} id={id}>
+      {(progress) => <BurstBody heading={heading} kicker={kicker} progress={progress} sub={sub} />}
     </ScrollScene>
   );
 }
 
-function LoudKicker({ progress, children }: { progress: MotionValue<number>; children: React.ReactNode }) {
-  const opacity = useTransform(progress, [0.04, 0.14, 0.84, 0.95], [0, 1, 1, 0]);
+function BurstBody({
+  progress,
+  kicker,
+  heading,
+  sub
+}: {
+  progress: MotionValue<number>;
+  kicker?: React.ReactNode;
+  heading: BurstLineData[];
+  sub?: React.ReactNode;
+}) {
+  // The iris: pinpoint -> floods the screen -> holds -> collapses back.
+  const scale = useTransform(progress, [0, 0.28, 0.72, 0.98], [0, 1, 1, 0]);
   return (
-    <motion.span className="rf-loud-kicker" style={{ opacity }}>
-      {children}
+    <>
+      <motion.div aria-hidden className="rf-burst-iris" style={{ scale }} />
+      <div className="rf-burst-content">
+        {kicker ? (
+          <BurstFade from={0.32} progress={progress}>
+            <span className="rf-burst-kicker">{kicker}</span>
+          </BurstFade>
+        ) : null}
+        <div className="rf-burst-heading">
+          {heading.map((line, i) => (
+            <BurstLine index={i} key={i} line={line} progress={progress} />
+          ))}
+        </div>
+        {sub ? (
+          <BurstFade from={0.46} progress={progress}>
+            <p className="rf-burst-sub">{sub}</p>
+          </BurstFade>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
+/* A heading line: enters from its side once the screen is flooded, then
+   retreats to the same side on the way out (the inverse of its entry). */
+function BurstLine({ line, index, progress }: { line: BurstLineData; index: number; progress: MotionValue<number> }) {
+  const from = index % 2 === 0 ? -460 : 460;
+  const inStart = 0.32 + index * 0.05;
+  const x = useTransform(progress, [inStart, inStart + 0.12, 0.64, 0.74], [from, 0, 0, from]);
+  const opacity = useTransform(progress, [inStart, inStart + 0.09, 0.62, 0.72], [0, 1, 1, 0]);
+  return (
+    <motion.span className={`rf-burst-line ${line.accent ? "is-accent" : ""}`} style={{ x, opacity }}>
+      {line.text}
     </motion.span>
   );
 }
 
-function LoudWord({
-  line,
-  index,
-  total,
-  progress
-}: {
-  line: LoudLine;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-}) {
-  const span = 0.46 / total;
-  const start = 0.12 + index * span;
-  const from = index % 2 === 0 ? -360 : 360;
-  const x = useTransform(progress, [start, start + 0.16], [from, 0]);
-  const opacity = useTransform(progress, [start, start + 0.1, 0.85, 0.96], [0, 1, 1, 0]);
+/* Kicker / sub-copy: a gentle rise + fade, timed inside the flood. */
+function BurstFade({ progress, from, children }: { progress: MotionValue<number>; from: number; children: React.ReactNode }) {
+  const opacity = useTransform(progress, [from, from + 0.08, 0.62, 0.72], [0, 1, 1, 0]);
+  const y = useTransform(progress, [from, from + 0.08], [26, 0]);
   return (
-    <motion.span className={`rf-loud-line ${line.accent ? "is-accent" : ""}`} style={{ x, opacity }}>
-      {line.text}
-    </motion.span>
+    <motion.div className="rf-burst-fade" style={{ opacity, y }}>
+      {children}
+    </motion.div>
   );
 }
 
@@ -690,21 +717,14 @@ export default function Home() {
       <div className="rf-backdrop" aria-hidden />
 
       {/* 1 — Hero */}
-      <ScrollScene className="rf-hero" height={1.9} id="top">
-        {(progress) => (
-          <div className="rf-doc rf-hero-doc">
-            <Reveal index={0} progress={progress}>
-              <Kicker>Born on a Florida muni · Made in the USA</Kicker>
-            </Reveal>
-            <Reveal index={1} progress={progress}>
-              <h1 className="rf-hero-title">Own the Sock Drawer.</h1>
-            </Reveal>
-            <Reveal base={0.34} hold={0.85} index={2} progress={progress}>
-              <p className="rf-hero-tag">Golf upgraded everything but the sock drawer. Del Campo makes the pair golf recognizes.</p>
-            </Reveal>
-          </div>
-        )}
-      </ScrollScene>
+      <BurstStatement
+        height={2.1}
+        heading={[{ text: "Own the" }, { text: "Sock Drawer.", accent: true }]}
+        id="top"
+        kicker="Born on a Florida muni · Made in the USA"
+        sub="Golf upgraded everything but the sock drawer. Del Campo makes the pair golf recognizes."
+        theme="black"
+      />
 
       {/* 2 — The State of Golf */}
       <ScrollScene className="rf-state" height={1.9} id="state">
@@ -797,15 +817,11 @@ export default function Home() {
         ]}
       />
 
-      {/* 5b — Loud transition: the needlepoint thesis */}
-      <LoudStatement
+      {/* 5b — Burst transition: the needlepoint thesis */}
+      <BurstStatement
+        heading={[{ text: "Socks" }, { text: "are next.", accent: true }]}
         kicker="The Thesis"
-        lines={[
-          { text: "What needlepoint" },
-          { text: "belts did for golf," },
-          { text: "Del Campo does" },
-          { text: "for the sock.", accent: true }
-        ]}
+        sub="What needlepoint belts did for golf accessories, Del Campo can do for the sock — a small item that says a lot."
         theme="green"
       />
 
@@ -1022,15 +1038,12 @@ export default function Home() {
         ]}
       />
 
-      {/* 12b — Loud transition into the close */}
-      <LoudStatement
-        lines={[
-          { text: "Don't get" },
-          { text: "louder." },
-          { text: "Get everywhere", accent: true },
-          { text: "golf looks." }
-        ]}
-        theme="black"
+      {/* 12b — Burst transition into the close */}
+      <BurstStatement
+        heading={[{ text: "Everywhere" }, { text: "golf looks.", accent: true }]}
+        kicker="The Goal"
+        sub="Don't get louder. Get more present — in every room where golf culture actually happens."
+        theme="lime"
       />
 
       {/* 13 — Closing */}
