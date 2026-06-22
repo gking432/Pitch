@@ -168,7 +168,7 @@ const engineNodes = [
   { label: "Events", net: [33, 56], size: 38 },
   { label: "Green Grass", net: [43, 76], size: 34 },
   { label: "Ambassadors", net: [51, 50], size: 40 },
-  { label: "Content", net: [61, 74], size: 34 },
+  { label: "Media", net: [61, 74], size: 34 },
   { label: "Retail", net: [68, 58], size: 36 }
 ];
 
@@ -232,13 +232,35 @@ const proShopList = [
 ];
 
 const formats = [
+  ["On the Bag", "Caddies in shorts, socks visible, tournament-week stories."],
+  ["Creator Co-Branded Drops", "Bob Does Sports, Fore Play, golf media — their logo, their store."],
   ["Pro Shop Visits", "Talk to pros, study what sells, show where Del Campo fits."],
   ["Course Stories", "Editorial features on clubs, resort courses, munis, and people."],
   ["Inside the Member-Guest", "The event, the tee gift, the custom sock, the follow-up."],
-  ["On the Bag", "Caddie stories, tournament weeks, socks visible in real play."],
-  ["College Rivalry Golf", "High-energy matches, alumni, rivalry-themed drops."],
-  ["Design the Sock", "The custom process for clubs, events, and partners."],
-  ["The Best Tee Gift in Golf", "Member-guests, corporate outings, tournament gifting."]
+  ["College Rivalry Golf", "High-energy matches, alumni, rivalry-themed drops."]
+];
+
+/* What Del Campo already has — the expansion thesis, made concrete. */
+const baseAssets = [
+  ["DTC storefront", "Collections, bundles, drops, best-sellers — already selling direct."],
+  ["Custom club socks", "Send a logo, get a stitch preview — a stated ~4–5 week turnaround."],
+  ["Wholesale", "An open invitation for shops to carry the line."],
+  ["Clubhouse Rewards", "A loyalty layer: discounts all year, first access to drops."],
+  ["PGA Pro Program", "Pros already recognized as their own segment."],
+  ["Card Chaser", "Support for players chasing the dream."],
+  ["Golf Camp", "A pop-up platform for emerging golf brands."],
+  ["Caddie Chronicles", "A caddie-led editorial foundation already running."],
+  ["Retail footprint", "On the shelves at Dick's and PGA TOUR Superstore."]
+];
+
+/* Early proof points worth systematizing into a reusable library. */
+const proofPoints = [
+  ["Jason Kelce", "Wore Del Campo socks at a PGA TOUR Pro-Am."],
+  ["Patrick Koenig", "“My favorite golf socks I've ever worn” — and his 100-hole-hike pick."],
+  ["Horschel Family Foundation", "A collaboration sock already in the lineup."],
+  ["Caddie Chronicles", "Real PGA TOUR caddie voices, on the bag."],
+  ["Pro-shop & big-box", "Dick's and PGA TOUR Superstore distribution."],
+  ["Golf Camp", "A live event platform for golf-native discovery."]
 ];
 
 const collegePlays = [
@@ -262,8 +284,8 @@ const retailList = [
 const plays = [
   ["The Member-Guest Wedge", "Seed custom club-logo socks into premium member-guests, then convert into pro shop placement, reorders, and discovery among serious golfers."],
   ["The Pro Shop Standard", "Custom displays, reorder programs, and club-specific sections that make Del Campo the premium sock standard inside golf shops."],
-  ["Del Campo Clubhouse", "A host-led golf culture channel: course visits, pro shops, caddies, member-guests, college rivalries, and custom sock stories."],
   ["On the Bag", "Respected caddies as visible proof. A few recognizable pairs on Sunday can create serious brand memory."],
+  ["Creator Co-Branded Drops", "Creators as distribution partners: a co-branded Del Campo sock on their own merch store, launched by a caddie video."],
   ["College Rivalry Golf", "Rivalry matches, alumni weekends, and licensed moments for tasteful, young, low-cost golf content."],
   ["Custom Club Socks", "The core B2B wedge: club logos, tournaments, outings, resort golf, and annual reorders."],
   ["Retail Display Program", "Premium pro shop displays that make Del Campo look like a category leader, not an afterthought."]
@@ -406,7 +428,7 @@ function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement |
     <motion.div className="rf-engine-text" style={{ opacity, scale }}>
       <Kicker>The Marketing Engine</Kicker>
       <h2>One engine. Five ways in.</h2>
-      <p>Events seed it. Green grass sells it. Ambassadors prove it. Content spreads it. Retail scales it.</p>
+      <p>Events seed it. Green grass stocks it. Ambassadors prove it. Media spreads it. Retail scales it.</p>
     </motion.div>
   );
 }
@@ -772,43 +794,69 @@ export default function Home() {
             Socks still sit underneath the category — even though they are visible, giftable, customizable, affordable, and perfect for the places golf
             culture spreads: pro shops, member-guests, tournaments, college rivalries, corporate golf, caddie yards, and buddy trips.
           </p>,
-          <p className="rf-keyline" key="c">That gap is the opening.</p>,
+          <p className="rf-keyline" key="c">That gap is the opening — and Del Campo already moved into it.</p>,
           <p key="d">
-            Del Campo does not need to invent a new behavior. Golfers already wear socks. The job is to make Del Campo the pair they recognize, gift,
-            reorder, and look for in the shop.
+            This isn&apos;t a 0-to-1 idea. Golfers already wear socks, and Del Campo is already in the drawer. The job is not to invent a behavior. It is to
+            organize what&apos;s already working into one engine.
           </p>
         ]}
       />
 
-      {/* 4 — Why Del Campo */}
+      {/* 4 — Why Del Campo (the base, made concrete) */}
       <DocScene
+        height={1.9}
         id="why"
-        kicker="Why Del Campo"
-        heading="The ingredients already exist."
+        kicker="The Base"
+        heading="Del Campo already moved first."
         blocks={[
-          <p key="a">
-            Made in America. Distinctive designs. Custom-ready product. Licensed categories. PGA TOUR Fan Shop presence. Big-box distribution. Hundreds of
-            pro-shop footholds — a product that already moves through DTC, wholesale, custom events, college drops, tournament gifting, and green grass golf.
-          </p>,
-          <p className="rf-keyline" key="b">The next step is not more random marketing. It is turning those assets into one public brand story and a repeatable operating system.</p>
+          <p key="a">Made in America, distinctive, custom-ready — and already running more of a marketing machine than it gets credit for:</p>,
+          <div className="rf-modules" key="b">
+            {baseAssets.map(([title, body]) => (
+              <div className="rf-module" key={title}>
+                <strong>{title}</strong>
+                <p>{body}</p>
+              </div>
+            ))}
+          </div>,
+          <p className="rf-keyline" key="c">This isn&apos;t a brand standing still. It&apos;s a brand with scattered momentum — waiting to be organized into one engine.</p>
         ]}
       />
 
-      {/* 5 — The Position */}
+      {/* 4b — Proof */}
       <DocScene
+        height={1.9}
+        id="proof"
+        kicker="Proof"
+        heading="The proof is already on the ground."
+        blocks={[
+          <p key="a">Del Campo doesn&apos;t need to manufacture credibility. It needs to collect it — into a proof library it can reuse in ads, sell sheets, emails, and pro-shop pitches.</p>,
+          <div className="rf-modules" key="b">
+            {proofPoints.map(([title, body]) => (
+              <div className="rf-module" key={title}>
+                <strong>{title}</strong>
+                <p>{body}</p>
+              </div>
+            ))}
+          </div>
+        ]}
+      />
+
+      {/* 5 — The Position (fashion + performance wedge) */}
+      <DocScene
+        height={1.9}
         id="position"
         kicker="The Position"
-        heading="Premium. Classy. Fun. Recognizable."
+        heading="The performance sock golfers actually want to show."
         blocks={[
-          <p key="a">Del Campo should not become another loud golf content brand.</p>,
-          <p key="b">
-            It should become the sock brand that feels at home at a top club, a member-guest, a college rivalry weekend, a resort pro shop, and a
-            caddie&apos;s ankles on Sunday afternoon.
+          <p key="a">
+            Del Campo shouldn&apos;t fight FootJoy, Swiftwick, or Bombas on raw performance — and it shouldn&apos;t become a novelty sock. The open lane is the
+            gap between them: golf-native fashion with real performance underneath.
           </p>,
-          <p key="c">
-            The tone is golf-native. Confident. Tasteful. A little playful. Built for people who care what they wear, but do not want to look like they are
-            trying too hard.
-          </p>
+          <p key="b">
+            The performance is already there to earn a serious golfer&apos;s trust: cushioned heel and toe, arch support that holds through 18, an above-ankle
+            cut that keeps debris out, moisture-wicking, Made in America.
+          </p>,
+          <p className="rf-keyline" key="c">Performance gets them through 18. Style gets them noticed. Custom identity gets them remembered.</p>
         ]}
       />
 
@@ -940,23 +988,26 @@ export default function Home() {
         )}
       </PillarScene>
 
-      {/* 10 — Pillar 04: Content */}
-      <PillarScene className="rf-content" height={2.8} id="content" node={3} onActive={setActive}>
+      {/* 10 — Pillar 04: Media + Commerce */}
+      <PillarScene className="rf-content" height={3.2} id="content" node={3} onActive={setActive}>
         {(progress) => (
           <PillarDoc
-            heading="A classy golf channel, not a bro content house."
-            kicker="04 · Content"
+            heading="Creators aren't ambassadors. They're distribution."
+            kicker="04 · Media + Commerce"
             progress={progress}
             blocks={[
-              <p key="a">Del Campo does not need to become Good Good. The opportunity is a premium, editorial, golf-native layer — one host, one point of view, repeatable formats — that makes Del Campo present inside the culture without cheapening it.</p>,
-              <div className="rf-formats" key="b">
+              <p className="rf-lead" key="a">YouTube golf is now a massive culture-and-commerce channel — Good Good, Bob Does Sports, Fore Play, Grant Horvat. Del Campo&apos;s own presence there looks underdeveloped next to the size of it.</p>,
+              <p key="b">The move isn&apos;t to become Good Good. It&apos;s tasteful golf media — &ldquo;On the Bag&rdquo; video built from the Caddie Chronicles foundation that already exists — plus treating creators as distribution partners: a co-branded Del Campo sock, their logo, sold on their own merch store.</p>,
+              <p key="c">Tie it to commerce. A Del Campo caddie loops for the group on camera; the video launches the limited co-branded drop; the drop drives sales; the content becomes proof you reuse in ads and pro-shop materials. That&apos;s the Malbon lesson, told with restraint instead of shock value.</p>,
+              <div className="rf-formats" key="d">
                 {formats.map(([title, body]) => (
                   <div className="rf-format" key={title}>
                     <strong>{title}</strong>
                     <p>{body}</p>
                   </div>
                 ))}
-              </div>
+              </div>,
+              <p className="rf-keyline" key="e">The mechanic is Good Good. The tone is &ldquo;I know what those are&rdquo; — never &ldquo;what is he wearing?&rdquo;</p>
             ]}
           />
         )}
