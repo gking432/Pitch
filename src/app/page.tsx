@@ -447,6 +447,7 @@ function JourneyRail({
   return (
     <motion.div className="rf-rail" aria-hidden style={{ opacity: railShow }}>
       <div className="rf-rail-stage">
+        <div className="rf-rail-inner">
         <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
           {/* hub spokes — fade out */}
           {engineNodes.map((_, i) => (
@@ -552,6 +553,7 @@ function JourneyRail({
             </motion.div>
           );
         })}
+        </div>
       </div>
     </motion.div>
   );

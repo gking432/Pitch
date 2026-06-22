@@ -1884,6 +1884,17 @@ html {
   width: 100%;
 }
 
+/* Constrain the web + bar to the content column so the timeline doesn't
+   shoot past the text on either side. */
+.rf-rail-inner {
+  height: 100%;
+  margin: 0 auto;
+  max-width: 1040px;
+  padding: 0 28px;
+  position: relative;
+  width: 100%;
+}
+
 .rf-wire-live {
   opacity: 0;
   transition: opacity 0.45s ease;
