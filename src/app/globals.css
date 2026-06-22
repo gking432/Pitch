@@ -1894,42 +1894,39 @@ html {
 /* lime hub */
 .rf-hub {
   align-items: center;
-  background: var(--rf-neon);
-  border: 3px solid #0b1f10;
-  border-radius: 50%;
-  box-shadow: 0 14px 44px rgba(47, 207, 42, 0.3);
   display: flex;
-  height: clamp(78px, 9vw, 104px);
-  justify-content: center;
-  padding: 10px;
+  flex-direction: column;
   position: absolute;
-  text-align: center;
   transform: translate(-50%, -50%);
-  width: clamp(78px, 9vw, 104px);
   z-index: 3;
 }
 
-.rf-hub span {
-  color: #06270f;
-  font-size: clamp(0.6rem, 0.95vw, 0.8rem);
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  line-height: 1.05;
-  text-transform: uppercase;
+.rf-hub-disc {
+  background: var(--rf-neon);
+  border: 3px solid #0b1f10;
+  border-radius: 50%;
+  box-shadow: 0 12px 38px rgba(47, 207, 42, 0.28);
+  display: block;
 }
 
-/* supporting area chips */
-.rf-net-chip {
-  background: rgba(12, 22, 16, 0.82);
-  border: 1px solid var(--rf-line);
-  border-radius: 999px;
+.rf-hub-label {
   color: var(--rf-cream);
-  font-size: clamp(0.58rem, 0.92vw, 0.78rem);
-  font-weight: 750;
-  padding: 5px 12px;
+  font-size: clamp(0.58rem, 0.9vw, 0.74rem);
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  margin-top: 7px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* supporting dots */
+.rf-net-dot {
+  background: var(--rf-panel);
+  border: 2px solid var(--rf-line);
+  border-radius: 50%;
+  display: block;
   position: absolute;
   transform: translate(-50%, -50%);
-  white-space: nowrap;
   z-index: 2;
 }
 

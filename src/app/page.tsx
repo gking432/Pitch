@@ -160,31 +160,30 @@ const stats = [
 ];
 
 /* The lime hub the whole engine hangs off of. */
-const HUB = { label: "Marketing Engine", net: [50, 74] };
+const HUB = { net: [50, 64], size: 64 };
 
-/* Large pillar nodes: a gentle arc that collapses into evenly spaced
-   top-bar slots (10/30/50/70/90%). */
+/* Five pillar nodes, clustered + jumbled in a compact band below the
+   heading, that collapse into evenly spaced top-bar slots (10..90%). */
 const engineNodes = [
-  { label: "Events", net: [14, 46] },
-  { label: "Green Grass", net: [32, 60] },
-  { label: "Ambassadors", net: [50, 38] },
-  { label: "Content", net: [68, 60] },
-  { label: "Retail", net: [86, 46] }
+  { label: "Events", net: [33, 56], size: 38 },
+  { label: "Green Grass", net: [43, 76], size: 34 },
+  { label: "Ambassadors", net: [51, 50], size: 40 },
+  { label: "Content", net: [61, 74], size: 34 },
+  { label: "Retail", net: [68, 58], size: 36 }
 ];
 
-/* Supporting areas, wired to their pillar, that fade as the web collapses. */
+/* Small supporting dots clustered around their pillar; fade on collapse. */
 const subNodes = [
-  { label: "Member-guests", parent: 0, net: [7, 26] },
-  { label: "Tournaments", parent: 0, net: [21, 20] },
-  { label: "Pro shops", parent: 1, net: [25, 80] },
-  { label: "Reorders", parent: 1, net: [40, 84] },
-  { label: "Caddies", parent: 2, net: [45, 17] },
-  { label: "College", parent: 2, net: [59, 20] },
-  { label: "Course stories", parent: 3, net: [63, 84] },
-  { label: "Creators", parent: 3, net: [78, 80] },
-  { label: "DTC", parent: 4, net: [93, 24] },
-  { label: "Wholesale", parent: 4, net: [79, 25] },
-  { label: "Fan Shop", parent: 4, net: [96, 44] }
+  { parent: 0, net: [27, 49], size: 18 },
+  { parent: 0, net: [28, 63], size: 22 },
+  { parent: 1, net: [38, 84], size: 16 },
+  { parent: 1, net: [49, 82], size: 20 },
+  { parent: 2, net: [46, 43], size: 16 },
+  { parent: 2, net: [57, 44], size: 20 },
+  { parent: 3, net: [58, 83], size: 18 },
+  { parent: 3, net: [69, 80], size: 16 },
+  { parent: 4, net: [74, 52], size: 20 },
+  { parent: 4, net: [73, 67], size: 16 }
 ];
 
 /* The chain that becomes the timeline rail (stays through the morph). */
@@ -193,6 +192,13 @@ const railLinks = [
   [1, 2],
   [2, 3],
   [3, 4]
+];
+
+/* Extra cross-links for a jumbled web; fade out on collapse. */
+const meshLinks = [
+  [0, 2],
+  [2, 4],
+  [1, 3]
 ];
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -411,17 +417,18 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
   // 0 = full web, 1 = collapsed timeline bar. Holds at 1 once past the engine.
   const morph = useTransform(eP, [0.5, 0.9], [0, 1]);
 
-  const hubOpacity = useTransform(eP, [0.04, 0.14, 0.46, 0.58], [0, 1, 1, 0]);
-  const subOpacity = useTransform(eP, [0.06, 0.18, 0.44, 0.56], [0, 1, 1, 0]);
+  const hubOpacity = useTransform(eP, [0.04, 0.14, 0.44, 0.56], [0, 1, 1, 0]);
+  const subOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 1, 1, 0]);
+  const meshOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 0.4, 0.4, 0]);
   const railOpacity = useTransform(eP, [0.08, 0.2], [0, 1]);
   const nodeOpacity = useTransform(eP, [0.02, 0.14], [0, 1]);
 
   const barY = 9;
   const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], 10 + i * 20, m)));
   const nodeY = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.net[1], barY, m)));
+  const nodeSizes = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 26, m)));
   const hubX = useTransform(morph, (m) => lerp(HUB.net[0], 50, m));
   const hubY = useTransform(morph, (m) => lerp(HUB.net[1], barY, m));
-  const nodeSize = useTransform(morph, [0, 1], [44, 26]);
 
   return (
     <div className="rf-rail" aria-hidden>
@@ -432,7 +439,7 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
             <motion.line
               key={`h${i}`}
               stroke="var(--rf-neon)"
-              strokeWidth={0.16}
+              strokeWidth={0.14}
               style={{ opacity: hubOpacity }}
               x1={hubX}
               x2={nodeX[i]}
@@ -440,12 +447,25 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
               y2={nodeY[i]}
             />
           ))}
+          {/* mesh cross-links — fade out */}
+          {meshLinks.map(([a, b], i) => (
+            <motion.line
+              key={`m${i}`}
+              stroke="var(--rf-line)"
+              strokeWidth={0.12}
+              style={{ opacity: meshOpacity }}
+              x1={nodeX[a]}
+              x2={nodeX[b]}
+              y1={nodeY[a]}
+              y2={nodeY[b]}
+            />
+          ))}
           {/* sub-to-parent links — fade out */}
           {subNodes.map((s, i) => (
             <motion.line
               key={`s${i}`}
               stroke="var(--rf-line)"
-              strokeWidth={0.12}
+              strokeWidth={0.1}
               style={{ opacity: subOpacity }}
               x1={s.net[0]}
               x2={nodeX[s.parent]}
@@ -468,24 +488,23 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
           ))}
         </svg>
 
+        {/* supporting dots */}
+        {subNodes.map((s, i) => (
+          <motion.span
+            className="rf-net-dot"
+            key={`sub${i}`}
+            style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, width: s.size, height: s.size, opacity: subOpacity }}
+          />
+        ))}
+
         {/* the lime hub */}
         <motion.div
           className="rf-hub"
           style={{ left: useTransform(hubX, (v) => `${v}%`), top: useTransform(hubY, (v) => `${v}%`), opacity: hubOpacity }}
         >
-          <span>Marketing Engine</span>
+          <span className="rf-hub-disc" style={{ width: HUB.size, height: HUB.size }} />
+          <span className="rf-hub-label">Marketing Engine</span>
         </motion.div>
-
-        {/* supporting chips */}
-        {subNodes.map((s, i) => (
-          <motion.span
-            className="rf-net-chip"
-            key={`sub${i}`}
-            style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, opacity: subOpacity }}
-          >
-            {s.label}
-          </motion.span>
-        ))}
 
         {/* the five pillar nodes -> timeline */}
         {engineNodes.map((n, i) => {
@@ -496,7 +515,7 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
               key={n.label}
               style={{ left: useTransform(nodeX[i], (v) => `${v}%`), top: useTransform(nodeY[i], (v) => `${v}%`), opacity: nodeOpacity }}
             >
-              <motion.span className="rf-rail-disc" style={{ width: nodeSize, height: nodeSize }}>
+              <motion.span className="rf-rail-disc" style={{ width: nodeSizes[i], height: nodeSizes[i] }}>
                 <span className={`rf-rail-fill ${filled ? "is-on" : ""}`} />
               </motion.span>
               <span className={`rf-rail-label ${active === i ? "is-active" : ""}`}>{n.label}</span>
