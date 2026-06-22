@@ -421,17 +421,16 @@ function JourneyRail({
   active: number;
 }) {
   const { scrollYProgress: eP } = useScroll({ target: engineRef, offset: ["start start", "end end"] });
-  const { scrollYProgress: jP } = useScroll({ target: journeyRef, offset: ["start start", "end start"] });
+  // Anchored to the journey END so it only ramps during the final viewport.
+  const { scrollYProgress: tailP } = useScroll({ target: journeyRef, offset: ["end end", "end start"] });
 
   // 0 = full web, 1 = collapsed timeline bar. Holds at 1 once past the engine.
   const morph = useTransform(eP, [0.5, 0.9], [0, 1]);
 
-  // Fade the whole rail in as the engine starts, out as the journey ends.
-  const railShow = useTransform([eP, jP] as MotionValue[], ([e, j]: number[]) => {
-    const fadeIn = Math.min(1, e / 0.04);
-    const fadeOut = j < 0.94 ? 1 : Math.max(0, (0.99 - j) / 0.05);
-    return Math.min(fadeIn, fadeOut);
-  });
+  // Fade the whole rail in as the engine starts, out only as the journey ends.
+  const fadeIn = useTransform(eP, [0, 0.04], [0, 1]);
+  const fadeOut = useTransform(tailP, [0.4, 0.85], [1, 0]);
+  const railShow = useTransform([fadeIn, fadeOut] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
 
   const hubOpacity = useTransform(eP, [0.04, 0.14, 0.44, 0.56], [0, 1, 1, 0]);
   const subOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 1, 1, 0]);
