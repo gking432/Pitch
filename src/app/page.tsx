@@ -159,43 +159,40 @@ const stats = [
   { value: "8.1M", label: "Women and girls on-course, a record share.", accent: "var(--rf-coral)" }
 ];
 
-const PILLARS = ["Events", "Green Grass", "Ambassadors", "Content", "Retail"];
+/* The lime hub the whole engine hangs off of. */
+const HUB = { label: "Marketing Engine", net: [50, 74] };
 
-/* Large pillar nodes: a gentle left-to-right network position [x%, y%]
-   that collapses into evenly spaced top-bar slots. */
+/* Large pillar nodes: a gentle arc that collapses into evenly spaced
+   top-bar slots (10/30/50/70/90%). */
 const engineNodes = [
-  { label: "Events", net: [15, 50], size: 96 },
-  { label: "Green Grass", net: [35, 30], size: 108 },
-  { label: "Ambassadors", net: [52, 62], size: 100 },
-  { label: "Content", net: [70, 34], size: 92 },
-  { label: "Retail", net: [86, 56], size: 96 }
+  { label: "Events", net: [14, 46] },
+  { label: "Green Grass", net: [32, 60] },
+  { label: "Ambassadors", net: [50, 38] },
+  { label: "Content", net: [68, 60] },
+  { label: "Retail", net: [86, 46] }
 ];
 
-/* Small supporting dots that sit behind the five and fade on morph. */
+/* Supporting areas, wired to their pillar, that fade as the web collapses. */
 const subNodes = [
-  { parent: 0, net: [5, 36], size: 32 },
-  { parent: 0, net: [9, 66], size: 26 },
-  { parent: 1, net: [30, 13], size: 28 },
-  { parent: 2, net: [45, 82], size: 28 },
-  { parent: 3, net: [64, 16], size: 26 },
-  { parent: 3, net: [80, 15], size: 28 },
-  { parent: 4, net: [95, 38], size: 26 },
-  { parent: 4, net: [92, 74], size: 30 }
+  { label: "Member-guests", parent: 0, net: [7, 26] },
+  { label: "Tournaments", parent: 0, net: [21, 20] },
+  { label: "Pro shops", parent: 1, net: [25, 80] },
+  { label: "Reorders", parent: 1, net: [40, 84] },
+  { label: "Caddies", parent: 2, net: [45, 17] },
+  { label: "College", parent: 2, net: [59, 20] },
+  { label: "Course stories", parent: 3, net: [63, 84] },
+  { label: "Creators", parent: 3, net: [78, 80] },
+  { label: "DTC", parent: 4, net: [93, 24] },
+  { label: "Wholesale", parent: 4, net: [79, 25] },
+  { label: "Fan Shop", parent: 4, net: [96, 44] }
 ];
 
-/* The chain that becomes the timeline rail (always on). */
+/* The chain that becomes the timeline rail (stays through the morph). */
 const railLinks = [
   [0, 1],
   [1, 2],
   [2, 3],
   [3, 4]
-];
-
-/* Extra mesh links that fade out as the network collapses. */
-const meshLinks = [
-  [0, 2],
-  [1, 3],
-  [2, 4]
 ];
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -389,152 +386,147 @@ function RoadStep({ step, index, progress, s }: { step: string; index: number; p
 }
 
 /* ------------------------------------------------------------------ */
-/* Pillar timeline + scene                                             */
-/* Sticky stepper across the top of the 5 engine sections. Empty circles*/
-/* fill green with a bold black ring + line, in order, as you arrive.   */
+/* The persistent rail                                                 */
+/* One element. It assembles as a web below the engine heading, morphs */
+/* up into the timeline bar, then STAYS pinned at the top — lighting    */
+/* lime as you move through the five pillars below it.                 */
 /* ------------------------------------------------------------------ */
 
-function TimelineNode({
-  i,
-  index,
-  animate,
-  progress
-}: {
-  i: number;
-  index: number;
-  animate: boolean;
-  progress: MotionValue<number>;
-}) {
-  // fill: 1 when this node is reached, 0 otherwise.
-  const driven = i === index && animate;
-  const inA = driven ? 0.05 : 0;
-  const inB = driven ? 0.24 : 0.0001;
-  const v0 = i < index || (i === index && !animate) ? 1 : 0;
-  const v1 = i <= index ? 1 : 0;
-  const fill = useTransform(progress, [inA, inB], [v0, v1]);
-
+function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
+  const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
+  const opacity = useTransform(scrollYProgress, [0.02, 0.12, 0.36, 0.48], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0.02, 0.12], [0.95, 1]);
   return (
-    <div className="rf-tl-node">
-      {i > 0 && (
-        <>
-          <span className="rf-tl-line-base" />
-          <motion.span className="rf-tl-line" style={{ scaleX: fill }} />
-        </>
-      )}
-      <div className="rf-tl-circle">
-        <motion.span className="rf-tl-fill" style={{ opacity: fill, scale: fill }} />
-      </div>
-      <span className={`rf-tl-label ${i === index ? "is-active" : ""}`}>{PILLARS[i]}</span>
-    </div>
-  );
-}
-
-function PillarTimeline({ index, animate, progress }: { index: number; animate: boolean; progress: MotionValue<number> }) {
-  const opacity = useTransform(progress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]);
-  return (
-    <motion.div className="rf-timeline" style={{ opacity }} aria-hidden>
-      {PILLARS.map((_, i) => (
-        <TimelineNode animate={animate} i={i} index={index} key={i} progress={progress} />
-      ))}
+    <motion.div className="rf-engine-text" style={{ opacity, scale }}>
+      <Kicker>The Marketing Engine</Kicker>
+      <h2>One engine. Five ways in.</h2>
+      <p>Events seed it. Green grass sells it. Ambassadors prove it. Content spreads it. Retail scales it.</p>
     </motion.div>
   );
 }
 
-/* The marketing engine as a living network that fluidly morphs into the
-   top progress bar. Five large pillar nodes + supporting nodes, all wired
-   together, drift up into an evenly spaced row as you scroll. */
-function EngineNetwork({ progress }: { progress: MotionValue<number> }) {
-  // 0 = full network, 1 = collapsed into the top bar.
-  const morph = useTransform(progress, [0.4, 0.82], [0, 1]);
+function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLElement | null>; active: number }) {
+  const { scrollYProgress: eP } = useScroll({ target: engineRef, offset: ["start start", "end end"] });
 
-  // Heading clears out before the nodes rise into its space.
-  const headOpacity = useTransform(progress, [0.03, 0.12, 0.46, 0.56], [0, 1, 1, 0]);
-  // Supporting dots + mesh fade as the network tightens; the rail stays.
-  const subOpacity = useTransform(progress, [0.12, 0.22, 0.42, 0.56], [0, 1, 1, 0]);
-  const meshOpacity = useTransform(progress, [0.12, 0.22, 0.42, 0.56], [0, 0.4, 0.4, 0]);
-  const railOpacity = useTransform(progress, [0.08, 0.2], [0, 1]);
+  // 0 = full web, 1 = collapsed timeline bar. Holds at 1 once past the engine.
+  const morph = useTransform(eP, [0.5, 0.9], [0, 1]);
 
-  // Target row matches the pillar timeline: centers at 10/30/50/70/90%.
-  const barY = 13;
+  const hubOpacity = useTransform(eP, [0.04, 0.14, 0.46, 0.58], [0, 1, 1, 0]);
+  const subOpacity = useTransform(eP, [0.06, 0.18, 0.44, 0.56], [0, 1, 1, 0]);
+  const railOpacity = useTransform(eP, [0.08, 0.2], [0, 1]);
+  const nodeOpacity = useTransform(eP, [0.02, 0.14], [0, 1]);
+
+  const barY = 9;
   const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], 10 + i * 20, m)));
   const nodeY = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.net[1], barY, m)));
-  const nodeSize = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 26, m)));
-  const nodeAppear = engineNodes.map((_, i) => useTransform(progress, [0.04 + i * 0.025, 0.16 + i * 0.025], [0, 1]));
+  const hubX = useTransform(morph, (m) => lerp(HUB.net[0], 50, m));
+  const hubY = useTransform(morph, (m) => lerp(HUB.net[1], barY, m));
+  const nodeSize = useTransform(morph, [0, 1], [44, 26]);
 
   return (
-    <div className="rf-net">
-      <motion.div className="rf-net-head" style={{ opacity: headOpacity }}>
-        <Kicker>The Marketing Engine</Kicker>
-        <h2>One engine. Five ways in.</h2>
-        <p>Events seed it. Green grass sells it. Ambassadors prove it. Content spreads it. Retail scales it.</p>
-      </motion.div>
+    <div className="rf-rail" aria-hidden>
+      <div className="rf-rail-stage">
+        <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
+          {/* hub spokes — fade out */}
+          {engineNodes.map((_, i) => (
+            <motion.line
+              key={`h${i}`}
+              stroke="var(--rf-neon)"
+              strokeWidth={0.16}
+              style={{ opacity: hubOpacity }}
+              x1={hubX}
+              x2={nodeX[i]}
+              y1={hubY}
+              y2={nodeY[i]}
+            />
+          ))}
+          {/* sub-to-parent links — fade out */}
+          {subNodes.map((s, i) => (
+            <motion.line
+              key={`s${i}`}
+              stroke="var(--rf-line)"
+              strokeWidth={0.12}
+              style={{ opacity: subOpacity }}
+              x1={s.net[0]}
+              x2={nodeX[s.parent]}
+              y1={s.net[1]}
+              y2={nodeY[s.parent]}
+            />
+          ))}
+          {/* rail chain — becomes the timeline connector, stays */}
+          {railLinks.map(([a, b], i) => (
+            <motion.line
+              key={`r${i}`}
+              stroke="var(--rf-line)"
+              strokeWidth={0.2}
+              style={{ opacity: railOpacity }}
+              x1={nodeX[a]}
+              x2={nodeX[b]}
+              y1={nodeY[a]}
+              y2={nodeY[b]}
+            />
+          ))}
+        </svg>
 
-      <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
-        {/* mesh links — fade out */}
-        {meshLinks.map(([a, b], i) => (
-          <motion.line
-            key={`m${i}`}
-            stroke="var(--rf-line)"
-            strokeWidth={0.14}
-            style={{ opacity: meshOpacity }}
-            x1={nodeX[a]}
-            x2={nodeX[b]}
-            y1={nodeY[a]}
-            y2={nodeY[b]}
-          />
-        ))}
-        {/* sub-to-parent links — fade out */}
-        {subNodes.map((s, i) => (
-          <motion.line
-            key={`s${i}`}
-            stroke="var(--rf-line)"
-            strokeWidth={0.12}
-            style={{ opacity: subOpacity }}
-            x1={s.net[0]}
-            x2={nodeX[s.parent]}
-            y1={s.net[1]}
-            y2={nodeY[s.parent]}
-          />
-        ))}
-        {/* rail links — become the timeline connector */}
-        {railLinks.map(([a, b], i) => (
-          <motion.line
-            key={`r${i}`}
-            stroke="var(--rf-line)"
-            strokeWidth={0.22}
-            style={{ opacity: railOpacity }}
-            x1={nodeX[a]}
-            x2={nodeX[b]}
-            y1={nodeY[a]}
-            y2={nodeY[b]}
-          />
-        ))}
-      </svg>
-
-      {/* supporting dots */}
-      {subNodes.map((s, i) => (
-        <motion.span
-          className="rf-net-sub"
-          key={`sub${i}`}
-          style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, width: s.size, height: s.size, opacity: subOpacity }}
-        />
-      ))}
-
-      {/* the five pillar nodes */}
-      {engineNodes.map((n, i) => (
+        {/* the lime hub */}
         <motion.div
-          className="rf-net-node"
-          key={n.label}
-          style={{
-            left: useTransform(nodeX[i], (v) => `${v}%`),
-            top: useTransform(nodeY[i], (v) => `${v}%`),
-            opacity: nodeAppear[i]
-          }}
+          className="rf-hub"
+          style={{ left: useTransform(hubX, (v) => `${v}%`), top: useTransform(hubY, (v) => `${v}%`), opacity: hubOpacity }}
         >
-          <motion.span className="rf-net-disc" style={{ width: nodeSize[i], height: nodeSize[i] }} />
-          <span className="rf-net-label">{n.label}</span>
+          <span>Marketing Engine</span>
         </motion.div>
-      ))}
+
+        {/* supporting chips */}
+        {subNodes.map((s, i) => (
+          <motion.span
+            className="rf-net-chip"
+            key={`sub${i}`}
+            style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, opacity: subOpacity }}
+          >
+            {s.label}
+          </motion.span>
+        ))}
+
+        {/* the five pillar nodes -> timeline */}
+        {engineNodes.map((n, i) => {
+          const filled = active >= 0 && i <= active;
+          return (
+            <motion.div
+              className="rf-rail-node"
+              key={n.label}
+              style={{ left: useTransform(nodeX[i], (v) => `${v}%`), top: useTransform(nodeY[i], (v) => `${v}%`), opacity: nodeOpacity }}
+            >
+              <motion.span className="rf-rail-disc" style={{ width: nodeSize, height: nodeSize }}>
+                <span className={`rf-rail-fill ${filled ? "is-on" : ""}`} />
+              </motion.span>
+              <span className={`rf-rail-label ${active === i ? "is-active" : ""}`}>{n.label}</span>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* A pillar scene reports itself as the active node while it is centered,
+   so the persistent rail above lights the right circle. */
+function PillarBody({
+  progress,
+  node,
+  onActive,
+  children
+}: {
+  progress: MotionValue<number>;
+  node: number;
+  onActive: (n: number) => void;
+  children: React.ReactNode;
+}) {
+  useMotionValueEvent(progress, "change", (p) => {
+    if (p > 0.08 && p < 0.94) onActive(node);
+  });
+  return (
+    <div className="rf-pillar-wrap">
+      <div className="rf-pillar-doc">{children}</div>
     </div>
   );
 }
@@ -542,25 +534,24 @@ function EngineNetwork({ progress }: { progress: MotionValue<number> }) {
 function PillarScene({
   id,
   className = "",
-  index,
-  animate = true,
+  node,
+  onActive,
   height = 2.6,
   children
 }: {
   id?: string;
   className?: string;
-  index: number;
-  animate?: boolean;
+  node: number;
+  onActive: (n: number) => void;
   height?: number;
   children: (progress: MotionValue<number>) => React.ReactNode;
 }) {
   return (
     <ScrollScene className={`rf-pillar ${className}`} height={height} id={id}>
       {(progress) => (
-        <div className="rf-pillar-wrap">
-          <PillarTimeline animate={animate} index={index} progress={progress} />
-          <div className="rf-pillar-doc">{children(progress)}</div>
-        </div>
+        <PillarBody node={node} onActive={onActive} progress={progress}>
+          {children(progress)}
+        </PillarBody>
       )}
     </ScrollScene>
   );
@@ -664,6 +655,8 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
 /* ------------------------------------------------------------------ */
 
 export default function Home() {
+  const engineRef = useRef<HTMLElement | null>(null);
+  const [active, setActive] = useState(-1);
   return (
     <main className="rf-page">
       <div className="rf-backdrop" aria-hidden />
@@ -767,13 +760,20 @@ export default function Home() {
         )}
       </ScrollScene>
 
-      {/* 6 — The Marketing Engine (network morphs into the top bar) */}
-      <ScrollScene className="rf-engine" height={3.6} id="engine-view">
-        {(progress) => <EngineNetwork progress={progress} />}
-      </ScrollScene>
+      {/* 6 — The journey: engine network morphs into a persistent rail that
+          stays pinned at the top through all five pillars */}
+      <div className="rf-journey">
+        <JourneyRail active={active} engineRef={engineRef} />
+
+        {/* The Marketing Engine heading; the web assembles below it */}
+        <section className="rf-scene rf-engine-track" id="engine-view" ref={engineRef} style={{ minHeight: "340vh" }}>
+          <div className="rf-sticky">
+            <EngineHeading targetRef={engineRef} />
+          </div>
+        </section>
 
       {/* 7 — Pillar 01: Events (falling socks → roadmap) */}
-      <PillarScene className="rf-events" height={4.6} id="events" index={0}>
+      <PillarScene className="rf-events" height={4.6} id="events" node={0} onActive={setActive}>
         {(progress) => (
           <div className="rf-doc rf-doc--fill">
             <Reveal className="rf-doc-head" hold={0.95} index={0} progress={progress}>
@@ -809,7 +809,7 @@ export default function Home() {
       </PillarScene>
 
       {/* 8 — Pillar 02: Green Grass */}
-      <PillarScene className="rf-greengrass" id="greengrass" index={1}>
+      <PillarScene className="rf-greengrass" id="greengrass" node={1} onActive={setActive}>
         {(progress) => (
           <PillarDoc
             heading="The pro shop is the showroom."
@@ -831,7 +831,7 @@ export default function Home() {
       </PillarScene>
 
       {/* 9 — Pillar 03a: Ambassadors / Caddies */}
-      <PillarScene className="rf-ambassadors" id="ambassadors" index={2}>
+      <PillarScene className="rf-ambassadors" id="ambassadors" node={2} onActive={setActive}>
         {(progress) => (
           <PillarDoc
             heading="Players wear pants. Caddies wear shorts."
@@ -847,7 +847,7 @@ export default function Home() {
       </PillarScene>
 
       {/* 9b — Pillar 03b: Ambassadors / College (same node) */}
-      <PillarScene animate={false} className="rf-ambassadors" id="college" index={2}>
+      <PillarScene className="rf-ambassadors" id="college" node={2} onActive={setActive}>
         {(progress) => (
           <PillarDoc
             heading="College rivalry golf keeps it young."
@@ -869,7 +869,7 @@ export default function Home() {
       </PillarScene>
 
       {/* 10 — Pillar 04: Content */}
-      <PillarScene className="rf-content" height={2.8} id="content" index={3}>
+      <PillarScene className="rf-content" height={2.8} id="content" node={3} onActive={setActive}>
         {(progress) => (
           <PillarDoc
             heading="A classy golf channel, not a bro content house."
@@ -891,7 +891,7 @@ export default function Home() {
       </PillarScene>
 
       {/* 11 — Pillar 05: Retail */}
-      <PillarScene className="rf-retail" id="retail" index={4}>
+      <PillarScene className="rf-retail" id="retail" node={4} onActive={setActive}>
         {(progress) => (
           <PillarDoc
             heading="Retail scales what the engine builds."
@@ -911,6 +911,7 @@ export default function Home() {
           />
         )}
       </PillarScene>
+      </div>
 
       {/* 12 — Brand Memory (coda to the engine) */}
       <DocScene

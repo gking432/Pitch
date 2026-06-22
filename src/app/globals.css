@@ -1858,10 +1858,160 @@ html {
 }
 
 /* ============================================================ */
-/* Pillar scenes + top progress timeline                        */
+/* Journey: engine web -> persistent timeline rail              */
 /* ============================================================ */
-.rf-pillar .rf-sticky {
+.rf-journey {
+  position: relative;
+}
+
+/* The rail reserves no flow space but sticks to the top of the
+   viewport for the whole engine + pillars run. */
+.rf-rail {
+  height: 0;
+  pointer-events: none;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.rf-rail-stage {
+  height: 100vh;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.rf-net-wires {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+/* lime hub */
+.rf-hub {
+  align-items: center;
+  background: var(--rf-neon);
+  border: 3px solid #0b1f10;
+  border-radius: 50%;
+  box-shadow: 0 14px 44px rgba(47, 207, 42, 0.3);
+  display: flex;
+  height: clamp(78px, 9vw, 104px);
+  justify-content: center;
+  padding: 10px;
+  position: absolute;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  width: clamp(78px, 9vw, 104px);
+  z-index: 3;
+}
+
+.rf-hub span {
+  color: #06270f;
+  font-size: clamp(0.6rem, 0.95vw, 0.8rem);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+/* supporting area chips */
+.rf-net-chip {
+  background: rgba(12, 22, 16, 0.82);
+  border: 1px solid var(--rf-line);
+  border-radius: 999px;
+  color: var(--rf-cream);
+  font-size: clamp(0.58rem, 0.92vw, 0.78rem);
+  font-weight: 750;
+  padding: 5px 12px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* pillar nodes -> timeline circles */
+.rf-rail-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+.rf-rail-disc {
+  background: var(--rf-panel);
+  border: 3px solid var(--rf-cream);
+  border-radius: 50%;
+  display: block;
+  position: relative;
+}
+
+.rf-rail-fill {
+  background: var(--rf-neon);
+  border-radius: 50%;
+  inset: 2px;
+  opacity: 0;
+  position: absolute;
+  transform: scale(0.3);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.rf-rail-fill.is-on {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.rf-rail-label {
+  color: var(--rf-muted);
+  font-size: clamp(0.6rem, 1vw, 0.76rem);
+  font-weight: 850;
+  left: 50%;
+  letter-spacing: 0.07em;
+  position: absolute;
+  text-align: center;
+  text-transform: uppercase;
+  top: calc(100% + 9px);
+  transform: translateX(-50%);
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+.rf-rail-label.is-active {
+  color: var(--rf-cream);
+}
+
+/* engine heading sits in the upper area; the web assembles below it */
+.rf-engine-track .rf-sticky {
+  align-items: flex-start;
   justify-content: flex-start;
+}
+
+.rf-engine-text {
+  margin: clamp(10vh, 14vh, 18vh) auto 0;
+  max-width: 640px;
+  text-align: center;
+  width: 92%;
+}
+
+.rf-engine-text h2 {
+  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  line-height: 0.94;
+  margin: 8px 0 0;
+}
+
+.rf-engine-text p {
+  color: var(--rf-muted);
+  font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+  margin: 14px auto 0;
+  max-width: 46ch;
+}
+
+/* ---------------- Pillar layout ---------------- */
+.rf-pillar .rf-sticky {
+  justify-content: center;
+  padding-top: clamp(96px, 15vh, 150px);
 }
 
 .rf-pillar-wrap {
@@ -1889,164 +2039,6 @@ html {
 
 .rf-doc--fill {
   height: 100%;
-}
-
-/* The stepper */
-.rf-timeline {
-  display: flex;
-  margin: 0 auto clamp(20px, 4vh, 44px);
-  max-width: 720px;
-  padding-top: clamp(8px, 2vh, 20px);
-  width: 100%;
-}
-
-.rf-tl-node {
-  align-items: center;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  position: relative;
-}
-
-.rf-tl-line-base,
-.rf-tl-line {
-  height: 3px;
-  left: -50%;
-  position: absolute;
-  top: 11.5px;
-  width: 100%;
-}
-
-.rf-tl-line-base {
-  background: var(--rf-line);
-}
-
-.rf-tl-line {
-  background: #0b1f10;
-  transform-origin: left center;
-}
-
-.rf-tl-circle {
-  background: var(--rf-panel);
-  border: 2px solid var(--rf-line);
-  border-radius: 50%;
-  height: 26px;
-  position: relative;
-  width: 26px;
-  z-index: 1;
-}
-
-.rf-tl-fill {
-  background: var(--rf-neon);
-  border: 3px solid #0b1f10;
-  border-radius: 50%;
-  inset: -2px;
-  position: absolute;
-}
-
-.rf-tl-label {
-  color: var(--rf-muted);
-  font-size: clamp(0.6rem, 1vw, 0.74rem);
-  font-weight: 850;
-  letter-spacing: 0.07em;
-  margin-top: 9px;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.rf-tl-label.is-active {
-  color: var(--rf-cream);
-}
-
-/* Engine bubbles a touch bolder than the old token chips */
-.rf-engine-bubbles {
-  margin-top: clamp(10px, 2vh, 22px);
-}
-
-.rf-engine-bubbles .rf-token {
-  font-size: clamp(1.05rem, 1.7vw, 1.5rem);
-  padding: 14px 24px;
-}
-
-/* ---------------- Engine network -> top bar morph ---------------- */
-.rf-engine .rf-sticky {
-  align-items: stretch;
-}
-
-.rf-net {
-  height: min(82vh, 720px);
-  margin: auto;
-  max-width: 1120px;
-  position: relative;
-  width: 100%;
-}
-
-.rf-net-head {
-  left: 50%;
-  position: absolute;
-  text-align: center;
-  top: 2%;
-  transform: translateX(-50%);
-  width: min(640px, 92%);
-  z-index: 5;
-}
-
-.rf-net-head h2 {
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  line-height: 0.94;
-  margin: 8px 0 0;
-}
-
-.rf-net-head p {
-  color: var(--rf-muted);
-  font-size: clamp(0.85rem, 1.3vw, 1.05rem);
-  margin: 12px auto 0;
-  max-width: 46ch;
-}
-
-.rf-net-wires {
-  height: 100%;
-  inset: 0;
-  position: absolute;
-  width: 100%;
-  z-index: 1;
-}
-
-.rf-net-sub {
-  background: var(--rf-panel);
-  border: 2px solid var(--rf-line);
-  border-radius: 50%;
-  display: block;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
-
-.rf-net-node {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  z-index: 4;
-}
-
-.rf-net-disc {
-  background: var(--rf-panel);
-  border: 2px solid var(--rf-line);
-  border-radius: 50%;
-  display: block;
-}
-
-.rf-net-label {
-  color: var(--rf-muted);
-  font-size: clamp(0.62rem, 1vw, 0.78rem);
-  font-weight: 850;
-  left: 50%;
-  letter-spacing: 0.07em;
-  position: absolute;
-  text-align: center;
-  text-transform: uppercase;
-  top: calc(100% + 8px);
-  transform: translateX(-50%);
-  white-space: nowrap;
 }
 
 /* Image placeholders (legacy, unused) */
