@@ -149,6 +149,73 @@ function Lines({
 }
 
 /* ------------------------------------------------------------------ */
+/* Loud full-screen statement slides — huge words that slam in from    */
+/* alternating sides on scroll, on a black or green field. The deck's   */
+/* transition moments.                                                  */
+/* ------------------------------------------------------------------ */
+
+type LoudLine = { text: string; accent?: boolean };
+
+function LoudStatement({
+  id,
+  kicker,
+  lines,
+  theme = "black",
+  height = 2.4
+}: {
+  id?: string;
+  kicker?: React.ReactNode;
+  lines: LoudLine[];
+  theme?: "black" | "green";
+  height?: number;
+}) {
+  return (
+    <ScrollScene className={`rf-loud rf-loud--${theme}`} height={height} id={id}>
+      {(progress) => (
+        <div className="rf-loud-inner">
+          {kicker ? <LoudKicker progress={progress}>{kicker}</LoudKicker> : null}
+          {lines.map((line, i) => (
+            <LoudWord index={i} key={i} line={line} progress={progress} total={lines.length} />
+          ))}
+        </div>
+      )}
+    </ScrollScene>
+  );
+}
+
+function LoudKicker({ progress, children }: { progress: MotionValue<number>; children: React.ReactNode }) {
+  const opacity = useTransform(progress, [0.04, 0.14, 0.84, 0.95], [0, 1, 1, 0]);
+  return (
+    <motion.span className="rf-loud-kicker" style={{ opacity }}>
+      {children}
+    </motion.span>
+  );
+}
+
+function LoudWord({
+  line,
+  index,
+  total,
+  progress
+}: {
+  line: LoudLine;
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
+}) {
+  const span = 0.46 / total;
+  const start = 0.12 + index * span;
+  const from = index % 2 === 0 ? -360 : 360;
+  const x = useTransform(progress, [start, start + 0.16], [from, 0]);
+  const opacity = useTransform(progress, [start, start + 0.1, 0.85, 0.96], [0, 1, 1, 0]);
+  return (
+    <motion.span className={`rf-loud-line ${line.accent ? "is-accent" : ""}`} style={{ x, opacity }}>
+      {line.text}
+    </motion.span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Data                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -339,8 +406,9 @@ function RoadStep({ step, index, progress, s }: { step: string; index: number; p
 
 function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
   const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
-  const opacity = useTransform(scrollYProgress, [0.02, 0.12, 0.36, 0.48], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0.02, 0.12], [0.95, 1]);
+  // Heading reads first, then clears out of the way as the web explodes (~0.12).
+  const opacity = useTransform(scrollYProgress, [0.0, 0.04, 0.1, 0.18], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0.0, 0.04], [0.96, 1]);
   return (
     <motion.div className="rf-engine-text" style={{ opacity, scale }}>
       <Kicker>The Marketing Engine</Kicker>
@@ -363,18 +431,25 @@ function JourneyRail({
   // A small sentinel at the very end of the journey drives the fade-out.
   const { scrollYProgress: tailP } = useScroll({ target: tailRef, offset: ["start end", "start center"] });
 
-  // 0 = full web, 1 = collapsed timeline bar. Holds at 1 once past the engine.
-  const morph = useTransform(eP, [0.5, 0.9], [0, 1]);
+  // Phase 1: explode — the five nodes (and their satellites) fly out from the
+  // hub to form the web. Phase 2: morph — the web collapses into the bar.
+  const explode = useTransform(eP, [0.12, 0.3], [0, 1]);
+  const morph = useTransform(eP, [0.55, 0.9], [0, 1]);
 
   // Fade the whole rail in as the engine starts, out only as the journey ends.
-  const fadeIn = useTransform(eP, [0, 0.04], [0, 1]);
+  const fadeIn = useTransform(eP, [0, 0.02], [0, 1]);
   const fadeOut = useTransform(tailP, [0.2, 0.7], [1, 0]);
   const railShow = useTransform([fadeIn, fadeOut] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
 
-  const hubOpacity = useTransform(eP, [0.04, 0.14, 0.44, 0.56], [0, 1, 1, 0]);
-  const subOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 1, 1, 0]);
-  const meshOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 0.4, 0.4, 0]);
-  const railLineOpacity = useTransform(eP, [0.08, 0.2], [0, 1]);
+  // The hub is the only thing on screen at first; it holds, then fades as the
+  // web morphs into the bar.
+  const hubOpacity = useTransform(eP, [0, 0.05, 0.5, 0.6], [0, 1, 1, 0]);
+  // Nodes appear as they fly out, then stay solid forever (through the pillars).
+  const nodeAppear = useTransform(explode, [0, 0.25], [0, 1]);
+  const spokeOpacity = useTransform(eP, [0.12, 0.24, 0.5, 0.58], [0, 1, 1, 0]);
+  const subOpacity = useTransform(eP, [0.16, 0.3, 0.48, 0.56], [0, 1, 1, 0]);
+  const meshOpacity = useTransform(eP, [0.16, 0.3, 0.48, 0.56], [0, 0.4, 0.4, 0]);
+  const railLineOpacity = useTransform(eP, [0.32, 0.42], [0, 1]);
 
   // Track viewport width so the collapsed bar can land on the content column
   // (1000px, centered) in real pixels — full-width web, content-aligned bar.
@@ -390,9 +465,18 @@ function JourneyRail({
   const barX = engineNodes.map((_, i) => 50 + (((i - 2) * (COLUMN / 4)) / vw) * 100);
 
   const barY = 9;
-  const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], barX[i], m)));
-  const nodeY = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.net[1], barY, m)));
+  // Each node: from hub center -> net scatter (explode) -> bar slot (morph).
+  const ev = [explode, morph] as MotionValue[];
+  const nodeX = engineNodes.map((n, i) =>
+    useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[0], n.net[0], e), barX[i], m))
+  );
+  const nodeY = engineNodes.map((n) =>
+    useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[1], n.net[1], e), barY, m))
+  );
   const nodeSizes = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 26, m)));
+  // Satellites fly out from the hub on explode and collapse back in on morph.
+  const subX = subNodes.map((s) => useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[0], s.net[0], e), HUB.net[0], m)));
+  const subY = subNodes.map((s) => useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[1], s.net[1], e), HUB.net[1], m)));
   const hubX = useTransform(morph, (m) => lerp(HUB.net[0], 50, m));
   const hubY = useTransform(morph, (m) => lerp(HUB.net[1], barY, m));
 
@@ -400,13 +484,13 @@ function JourneyRail({
     <motion.div className="rf-rail" aria-hidden style={{ opacity: railShow }}>
       <div className="rf-rail-stage">
         <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
-          {/* hub spokes — fade out */}
+          {/* hub spokes — draw out as the nodes fly, then fade */}
           {engineNodes.map((_, i) => (
             <motion.line
               key={`h${i}`}
               stroke="var(--rf-neon)"
               strokeWidth={0.14}
-              style={{ opacity: hubOpacity }}
+              style={{ opacity: spokeOpacity }}
               x1={hubX}
               x2={nodeX[i]}
               y1={hubY}
@@ -426,16 +510,16 @@ function JourneyRail({
               y2={nodeY[b]}
             />
           ))}
-          {/* sub-to-parent links — fade out */}
+          {/* sub-to-parent links — fly out with the satellites, then fade */}
           {subNodes.map((s, i) => (
             <motion.line
               key={`s${i}`}
               stroke="var(--rf-line)"
               strokeWidth={0.1}
               style={{ opacity: subOpacity }}
-              x1={s.net[0]}
+              x1={subX[i]}
               x2={nodeX[s.parent]}
-              y1={s.net[1]}
+              y1={subY[i]}
               y2={nodeY[s.parent]}
             />
           ))}
@@ -472,7 +556,11 @@ function JourneyRail({
           <motion.div
             className="rf-subnode"
             key={`sub${i}`}
-            style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, opacity: subOpacity }}
+            style={{
+              left: useTransform(subX[i], (v) => `${v}%`),
+              top: useTransform(subY[i], (v) => `${v}%`),
+              opacity: subOpacity
+            }}
           >
             <span className="rf-net-dot" style={{ width: s.size, height: s.size }} />
             <span className="rf-subnode-label">{s.label}</span>
@@ -495,7 +583,11 @@ function JourneyRail({
             <motion.div
               className="rf-rail-node"
               key={n.label}
-              style={{ left: useTransform(nodeX[i], (v) => `${v}%`), top: useTransform(nodeY[i], (v) => `${v}%`) }}
+              style={{
+                left: useTransform(nodeX[i], (v) => `${v}%`),
+                top: useTransform(nodeY[i], (v) => `${v}%`),
+                opacity: nodeAppear
+              }}
             >
               <motion.span className={`rf-rail-disc ${filled ? "is-on" : ""}`} style={{ width: nodeSizes[i], height: nodeSizes[i] }}>
                 <span className={`rf-rail-fill ${filled ? "is-on" : ""}`} />
@@ -653,7 +745,7 @@ export default function Home() {
         ]}
       />
 
-      {/* 4 — Proof */}
+      {/* 4 — Proof, part 1: the story */}
       <DocScene
         height={1.9}
         id="proof"
@@ -661,8 +753,20 @@ export default function Home() {
         heading="The proof is already in the wild."
         blocks={[
           <p className="rf-lead" key="a">Jason Kelce wore Del Campo at a Pro-Am. Patrick Koenig called them his all-time favorite pair. An anonymous golf fashion account on X posted a player wearing Del Campo at the US Open — and the brand got discovered organically, by exactly the right audience, for nothing.</p>,
-          <p key="b">That kind of proof doesn&apos;t come from campaigns. It comes from being the sock serious golfers actually reach for. The job now is to build more of it deliberately — and collect every moment into something reusable: ad creative, sell sheets, pro-shop pitches, event decks.</p>,
-          <div className="rf-modules" key="c">
+          <p key="b">That kind of proof doesn&apos;t come from campaigns. It comes from being the sock serious golfers actually reach for.</p>,
+          <p className="rf-keyline" key="c">The job now isn&apos;t to manufacture credibility. It&apos;s to capture the credibility that already exists.</p>
+        ]}
+      />
+
+      {/* 4b — Proof, part 2: the library */}
+      <DocScene
+        height={1.9}
+        id="proof-library"
+        kicker="The Proof Library"
+        heading="Turn scattered moments into reusable proof."
+        blocks={[
+          <p key="a">Every endorsement, every organic post, every caddie voice becomes an asset Del Campo can reuse in ad creative, sell sheets, pro-shop pitches, and event decks.</p>,
+          <div className="rf-modules" key="b">
             {proofPoints.map(([title, body]) => (
               <div className="rf-module" key={title}>
                 <strong>{title}</strong>
@@ -670,7 +774,7 @@ export default function Home() {
               </div>
             ))}
           </div>,
-          <p className="rf-keyline" key="d">Proof compounds. Every pair in the right room is one more moment waiting to be captured.</p>
+          <p className="rf-keyline" key="c">Proof compounds. Every pair in the right room is one more moment waiting to be captured.</p>
         ]}
       />
 
@@ -693,16 +797,17 @@ export default function Home() {
         ]}
       />
 
-      {/* 5b — Statement */}
-      <ScrollScene className="rf-statement-scene" height={1.6}>
-        {(progress) => (
-          <Reveal hold={0.82} index={0} progress={progress}>
-            <p className="rf-statement">
-              Del Campo can become for golf socks what needlepoint belts became for golf accessories: <span>a small item that says a lot.</span>
-            </p>
-          </Reveal>
-        )}
-      </ScrollScene>
+      {/* 5b — Loud transition: the needlepoint thesis */}
+      <LoudStatement
+        kicker="The Thesis"
+        lines={[
+          { text: "What needlepoint" },
+          { text: "belts did for golf," },
+          { text: "Del Campo does" },
+          { text: "for the sock.", accent: true }
+        ]}
+        theme="green"
+      />
 
       {/* 6 — The journey: engine network morphs into a persistent rail that
           stays pinned at the top through all five pillars */}
@@ -832,10 +937,8 @@ export default function Home() {
             kicker="04 · Media"
             progress={progress}
             blocks={[
-              <p className="rf-lead" key="a">YouTube golf is now a massive culture channel — Good Good, Bob Does Sports, Fore Play, Grant Horvat. Del Campo&apos;s own presence looks underdeveloped next to the size of it.</p>,
-              <p key="b">The move isn&apos;t to become Good Good. It&apos;s &ldquo;On the Bag&rdquo; — tasteful caddie content built from the Caddie Chronicles foundation that already exists. Golf-native, not a circus.</p>,
-              <p key="c">On X, anonymous golf fashion accounts post players&apos; tournament fits to audiences of serious golfers. When one of those posts features Del Campo, that&apos;s earned discovery at exactly the right moment — for nothing.</p>,
-              <div className="rf-formats" key="d">
+              <p className="rf-lead" key="a">YouTube golf is now a massive culture channel — Good Good, Bob Does Sports, Fore Play, Grant Horvat. The move isn&apos;t to become them; it&apos;s tasteful, golf-native media built from the Caddie Chronicles foundation that already exists.</p>,
+              <div className="rf-formats" key="b">
                 {mediaFormats.map(([title, body]) => (
                   <div className="rf-format" key={title}>
                     <strong>{title}</strong>
@@ -843,7 +946,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>,
-              <p className="rf-keyline" key="e">The mechanic is Good Good. The tone is &ldquo;I know what those are&rdquo; — never &ldquo;what is he wearing?&rdquo;</p>
+              <p className="rf-keyline" key="c">The tone is &ldquo;I know what those are&rdquo; — never &ldquo;what is he wearing?&rdquo;</p>
             ]}
           />
         )}
@@ -917,6 +1020,17 @@ export default function Home() {
             </div>
           </div>
         ]}
+      />
+
+      {/* 12b — Loud transition into the close */}
+      <LoudStatement
+        lines={[
+          { text: "Don't get" },
+          { text: "louder." },
+          { text: "Get everywhere", accent: true },
+          { text: "golf looks." }
+        ]}
+        theme="black"
       />
 
       {/* 13 — Closing */}
