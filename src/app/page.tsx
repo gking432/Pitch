@@ -749,6 +749,15 @@ export default function Home() {
         theme="black"
       />
 
+      {/* Chapter 01 — The Opportunity */}
+      <BurstStatement
+        height={2}
+        heading={[{ text: "Golf grew up." }, { text: "The sock didn't.", accent: true }]}
+        kicker="Chapter 01 · The Opportunity"
+        sub="Clubs, shoes, polos, belts — every piece of golf leveled up. The sock drawer is the last open lane."
+        theme="green"
+      />
+
       {/* 2 — The State of Golf */}
       <ScrollScene className="rf-state" height={1.9} id="state">
         {(progress) => (
@@ -788,12 +797,21 @@ export default function Home() {
         ]}
       />
 
+      {/* Chapter 02 — The Proof */}
+      <BurstStatement
+        height={2}
+        heading={[{ text: "It's already" }, { text: "in the wild.", accent: true }]}
+        kicker="Chapter 02 · The Proof"
+        sub="Pros wear it unprompted. Caddies vouch for it. Golf accounts post it. The credibility exists — it just isn't collected yet."
+        theme="black"
+      />
+
       {/* 4 — Proof, part 1: the story */}
       <DocScene
         height={1.9}
         id="proof"
         kicker="Proof"
-        heading="The proof is already in the wild."
+        heading="Credibility nobody had to buy."
         blocks={[
           <p className="rf-lead" key="a">Jason Kelce wore Del Campo at a Pro-Am. Patrick Koenig called them his all-time favorite pair. An anonymous golf fashion account on X posted a player wearing Del Campo at the US Open — and the brand got discovered organically, by exactly the right audience, for nothing.</p>,
           <p key="b">That kind of proof doesn&apos;t come from campaigns. It comes from being the sock serious golfers actually reach for.</p>,
@@ -821,6 +839,15 @@ export default function Home() {
         ]}
       />
 
+      {/* Chapter 03 — The Position */}
+      <BurstStatement
+        height={2}
+        heading={[{ text: "Socks" }, { text: "are next.", accent: true }]}
+        kicker="Chapter 03 · The Position"
+        sub="What needlepoint belts did for golf accessories, Del Campo can do for the sock — performance underneath, fashion on top."
+        theme="lime"
+      />
+
       {/* 5 — The Position (fashion + performance wedge) */}
       <DocScene
         height={1.9}
@@ -840,11 +867,12 @@ export default function Home() {
         ]}
       />
 
-      {/* 5b — Burst transition: the needlepoint thesis */}
+      {/* Chapter 04 — The Engine */}
       <BurstStatement
-        heading={[{ text: "Socks" }, { text: "are next.", accent: true }]}
-        kicker="The Thesis"
-        sub="What needlepoint belts did for golf accessories, Del Campo can do for the sock — a small item that says a lot."
+        heading={[{ text: "Five ways" }, { text: "into golf.", accent: true }]}
+        height={2.1}
+        kicker="Chapter 04 · The Engine"
+        sub="Events, green grass, ambassadors, media, retail. One engine that compounds — not five campaigns that don't."
         theme="green"
       />
 
@@ -1062,10 +1090,10 @@ export default function Home() {
         ]}
       />
 
-      {/* 12b — Burst transition into the close */}
+      {/* Chapter 05 — The Payoff */}
       <BurstStatement
         heading={[{ text: "Everywhere" }, { text: "golf looks.", accent: true }]}
-        kicker="The Goal"
+        kicker="Chapter 05 · The Payoff"
         sub="Don't get louder. Get more present — in every room where golf culture actually happens."
         theme="lime"
       />
