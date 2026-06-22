@@ -172,18 +172,18 @@ const engineNodes = [
   { label: "Retail", net: [68, 58], size: 36 }
 ];
 
-/* Small supporting dots clustered around their pillar; fade on collapse. */
+/* Small supporting nodes clustered around their pillar; fade on collapse. */
 const subNodes = [
-  { parent: 0, net: [27, 49], size: 18 },
-  { parent: 0, net: [28, 63], size: 22 },
-  { parent: 1, net: [38, 84], size: 16 },
-  { parent: 1, net: [49, 82], size: 20 },
-  { parent: 2, net: [46, 43], size: 16 },
-  { parent: 2, net: [57, 44], size: 20 },
-  { parent: 3, net: [58, 83], size: 18 },
-  { parent: 3, net: [69, 80], size: 16 },
-  { parent: 4, net: [74, 52], size: 20 },
-  { parent: 4, net: [73, 67], size: 16 }
+  { label: "Member-guests", parent: 0, net: [25, 47], size: 18 },
+  { label: "Tournaments", parent: 0, net: [26, 64], size: 22 },
+  { label: "Pro shops", parent: 1, net: [37, 85], size: 16 },
+  { label: "Reorders", parent: 1, net: [49, 84], size: 20 },
+  { label: "Caddies", parent: 2, net: [45, 42], size: 16 },
+  { label: "College", parent: 2, net: [57, 43], size: 20 },
+  { label: "Course stories", parent: 3, net: [57, 85], size: 18 },
+  { label: "Creators", parent: 3, net: [70, 82], size: 16 },
+  { label: "DTC", parent: 4, net: [76, 51], size: 20 },
+  { label: "Wholesale", parent: 4, net: [75, 68], size: 16 }
 ];
 
 /* The chain that becomes the timeline rail (stays through the morph). */
@@ -411,16 +411,32 @@ function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement |
   );
 }
 
-function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLElement | null>; active: number }) {
+function JourneyRail({
+  engineRef,
+  journeyRef,
+  active
+}: {
+  engineRef: React.RefObject<HTMLElement | null>;
+  journeyRef: React.RefObject<HTMLElement | null>;
+  active: number;
+}) {
   const { scrollYProgress: eP } = useScroll({ target: engineRef, offset: ["start start", "end end"] });
+  const { scrollYProgress: jP } = useScroll({ target: journeyRef, offset: ["start start", "end start"] });
 
   // 0 = full web, 1 = collapsed timeline bar. Holds at 1 once past the engine.
   const morph = useTransform(eP, [0.5, 0.9], [0, 1]);
 
+  // Fade the whole rail in as the engine starts, out as the journey ends.
+  const railShow = useTransform([eP, jP] as MotionValue[], ([e, j]: number[]) => {
+    const fadeIn = Math.min(1, e / 0.04);
+    const fadeOut = j < 0.94 ? 1 : Math.max(0, (0.99 - j) / 0.05);
+    return Math.min(fadeIn, fadeOut);
+  });
+
   const hubOpacity = useTransform(eP, [0.04, 0.14, 0.44, 0.56], [0, 1, 1, 0]);
   const subOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 1, 1, 0]);
   const meshOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 0.4, 0.4, 0]);
-  const railOpacity = useTransform(eP, [0.08, 0.2], [0, 1]);
+  const railLineOpacity = useTransform(eP, [0.08, 0.2], [0, 1]);
   const nodeOpacity = useTransform(eP, [0.02, 0.14], [0, 1]);
 
   const barY = 9;
@@ -431,7 +447,7 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
   const hubY = useTransform(morph, (m) => lerp(HUB.net[1], barY, m));
 
   return (
-    <div className="rf-rail" aria-hidden>
+    <motion.div className="rf-rail" aria-hidden style={{ opacity: railShow }}>
       <div className="rf-rail-stage">
         <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
           {/* hub spokes — fade out */}
@@ -473,13 +489,26 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
               y2={nodeY[s.parent]}
             />
           ))}
-          {/* rail chain — becomes the timeline connector, stays */}
+          {/* rail chain — base connector, stays */}
           {railLinks.map(([a, b], i) => (
             <motion.line
               key={`r${i}`}
               stroke="var(--rf-line)"
-              strokeWidth={0.2}
-              style={{ opacity: railOpacity }}
+              strokeWidth={0.18}
+              style={{ opacity: railLineOpacity }}
+              x1={nodeX[a]}
+              x2={nodeX[b]}
+              y1={nodeY[a]}
+              y2={nodeY[b]}
+            />
+          ))}
+          {/* rail chain — bold lime as each segment is reached */}
+          {railLinks.map(([a, b], i) => (
+            <motion.line
+              className={`rf-wire-live ${active >= b ? "is-on" : ""}`}
+              key={`rl${i}`}
+              stroke="var(--rf-neon)"
+              strokeWidth={0.5}
               x1={nodeX[a]}
               x2={nodeX[b]}
               y1={nodeY[a]}
@@ -488,13 +517,16 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
           ))}
         </svg>
 
-        {/* supporting dots */}
+        {/* supporting nodes with labels */}
         {subNodes.map((s, i) => (
-          <motion.span
-            className="rf-net-dot"
+          <motion.div
+            className="rf-subnode"
             key={`sub${i}`}
-            style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, width: s.size, height: s.size, opacity: subOpacity }}
-          />
+            style={{ left: `${s.net[0]}%`, top: `${s.net[1]}%`, opacity: subOpacity }}
+          >
+            <span className="rf-net-dot" style={{ width: s.size, height: s.size }} />
+            <span className="rf-subnode-label">{s.label}</span>
+          </motion.div>
         ))}
 
         {/* the lime hub */}
@@ -515,7 +547,7 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
               key={n.label}
               style={{ left: useTransform(nodeX[i], (v) => `${v}%`), top: useTransform(nodeY[i], (v) => `${v}%`), opacity: nodeOpacity }}
             >
-              <motion.span className="rf-rail-disc" style={{ width: nodeSizes[i], height: nodeSizes[i] }}>
+              <motion.span className={`rf-rail-disc ${filled ? "is-on" : ""}`} style={{ width: nodeSizes[i], height: nodeSizes[i] }}>
                 <span className={`rf-rail-fill ${filled ? "is-on" : ""}`} />
               </motion.span>
               <span className={`rf-rail-label ${active === i ? "is-active" : ""}`}>{n.label}</span>
@@ -523,7 +555,7 @@ function JourneyRail({ engineRef, active }: { engineRef: React.RefObject<HTMLEle
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -675,6 +707,7 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
 
 export default function Home() {
   const engineRef = useRef<HTMLElement | null>(null);
+  const journeyRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(-1);
   return (
     <main className="rf-page">
@@ -781,8 +814,8 @@ export default function Home() {
 
       {/* 6 — The journey: engine network morphs into a persistent rail that
           stays pinned at the top through all five pillars */}
-      <div className="rf-journey">
-        <JourneyRail active={active} engineRef={engineRef} />
+      <div className="rf-journey" ref={journeyRef}>
+        <JourneyRail active={active} engineRef={engineRef} journeyRef={journeyRef} />
 
         {/* The Marketing Engine heading; the web assembles below it */}
         <section className="rf-scene rf-engine-track" id="engine-view" ref={engineRef} style={{ minHeight: "340vh" }}>

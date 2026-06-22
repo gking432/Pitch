@@ -1864,13 +1864,15 @@ html {
   position: relative;
 }
 
-/* The rail reserves no flow space but sticks to the top of the
-   viewport for the whole engine + pillars run. */
+/* The rail is fixed to the viewport while the journey is on screen, so the
+   timeline bar genuinely persists through every pillar. */
 .rf-rail {
   height: 0;
+  left: 0;
   pointer-events: none;
-  position: sticky;
+  position: fixed;
   top: 0;
+  width: 100%;
   z-index: 40;
 }
 
@@ -1880,6 +1882,15 @@ html {
   position: absolute;
   top: 0;
   width: 100%;
+}
+
+.rf-wire-live {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.rf-wire-live.is-on {
+  opacity: 1;
 }
 
 .rf-net-wires {
@@ -1919,15 +1930,31 @@ html {
   white-space: nowrap;
 }
 
-/* supporting dots */
-.rf-net-dot {
-  background: var(--rf-panel);
-  border: 2px solid var(--rf-line);
-  border-radius: 50%;
-  display: block;
+/* supporting nodes (dot + small label) */
+.rf-subnode {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 2;
+}
+
+.rf-net-dot {
+  background: var(--rf-panel);
+  border: 2px solid rgba(18, 19, 13, 0.45);
+  border-radius: 50%;
+  display: block;
+}
+
+.rf-subnode-label {
+  color: var(--rf-muted);
+  font-size: clamp(0.46rem, 0.72vw, 0.62rem);
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* pillar nodes -> timeline circles */
@@ -1943,6 +1970,12 @@ html {
   border-radius: 50%;
   display: block;
   position: relative;
+  transition: border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.rf-rail-disc.is-on {
+  border-color: var(--rf-neon);
+  box-shadow: 0 0 0 4px rgba(47, 207, 42, 0.18);
 }
 
 .rf-rail-fill {
