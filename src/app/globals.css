@@ -1576,6 +1576,81 @@ html {
   font-weight: 850;
 }
 
+/* ---------------- Split doc layout (main content + right aside) --- */
+.rf-doc--side {
+  align-items: start;
+  display: grid;
+  gap: clamp(28px, 5vw, 56px);
+  grid-template-columns: minmax(0, 1fr) clamp(260px, 30vw, 360px);
+  max-width: 1080px;
+}
+
+.rf-side-main {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.2vh, 26px);
+}
+
+.rf-side-aside {
+  align-self: center;
+}
+
+/* Dark quote card — graphic callout on the right */
+.rf-quote-card {
+  background: var(--rf-surface);
+  border-radius: 18px;
+  color: var(--rf-on-surface);
+  padding: clamp(22px, 3vw, 32px);
+  position: relative;
+}
+
+.rf-quote-card::before {
+  color: var(--rf-neon);
+  content: "\201C";
+  display: block;
+  font-size: 4rem;
+  font-weight: 950;
+  line-height: 0.7;
+  margin-bottom: 14px;
+}
+
+.rf-quote-card blockquote {
+  color: rgba(244, 247, 238, 0.88);
+  font-size: clamp(0.96rem, 1.4vw, 1.18rem);
+  font-weight: 600;
+  line-height: 1.48;
+  margin: 0;
+}
+
+.rf-quote-card figcaption {
+  border-top: 1px solid rgba(244, 247, 238, 0.12);
+  margin-top: 20px;
+  padding-top: 16px;
+}
+
+.rf-quote-card figcaption strong {
+  color: var(--rf-neon);
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rf-quote-card figcaption span {
+  color: rgba(244, 247, 238, 0.55);
+  display: block;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  margin-top: 5px;
+}
+
+@media (max-width: 820px) {
+  .rf-doc--side {
+    grid-template-columns: 1fr;
+  }
+}
+
 .rf-doc .rf-cta {
   margin-top: clamp(14px, 2.4vh, 26px);
 }

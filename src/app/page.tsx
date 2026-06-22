@@ -231,36 +231,29 @@ const proShopList = [
   "Limited event designs."
 ];
 
-const formats = [
-  ["On the Bag", "Caddies in shorts, socks visible, tournament-week stories."],
-  ["Creator Co-Branded Drops", "Bob Does Sports, Fore Play, golf media — their logo, their store."],
-  ["Pro Shop Visits", "Talk to pros, study what sells, show where Del Campo fits."],
-  ["Course Stories", "Editorial features on clubs, resort courses, munis, and people."],
-  ["Inside the Member-Guest", "The event, the tee gift, the custom sock, the follow-up."],
-  ["College Rivalry Golf", "High-energy matches, alumni, rivalry-themed drops."]
+/* Media channel content formats */
+const mediaFormats = [
+  ["On the Bag", "Caddies in shorts, socks visible, tournament-week stories from inside the ropes."],
+  ["Course Stories", "Editorial features on clubs, resort courses, munis, and the people who love them."],
+  ["College Rivalry Golf", "High-energy matches, alumni weekends, campus-color drops."],
+  ["Golf X · Organic Social", "Anonymous golf fashion accounts post players' tournament fits to serious golfers. When they post Del Campo, that's earned discovery money can't buy."]
 ];
 
-/* What Del Campo already has — the expansion thesis, made concrete. */
-const baseAssets = [
-  ["DTC storefront", "Collections, bundles, drops, best-sellers — already selling direct."],
-  ["Custom club socks", "Send a logo, get a stitch preview — a stated ~4–5 week turnaround."],
-  ["Wholesale", "An open invitation for shops to carry the line."],
-  ["Clubhouse Rewards", "A loyalty layer: discounts all year, first access to drops."],
-  ["PGA Pro Program", "Pros already recognized as their own segment."],
-  ["Card Chaser", "Support for players chasing the dream."],
-  ["Golf Camp", "A pop-up platform for emerging golf brands."],
-  ["Caddie Chronicles", "A caddie-led editorial foundation already running."],
-  ["Retail footprint", "On the shelves at Dick's and PGA TOUR Superstore."]
+/* Creator co-brand and commerce formats */
+const commerceFormats = [
+  ["Creator Co-Branded Drops", "Bob Does Sports, Fore Play, Grant Horvat — their logo, their audience, sold on their own merch store."],
+  ["The Content-to-Commerce Loop", "Caddie loops for camera. Video launches the co-branded drop. Drop drives sales. Content becomes proof you reuse everywhere."],
+  ["Inside the Member-Guest", "The event, the tee gift, the custom sock, the follow-up reorder."],
+  ["Pro Shop Placement", "Custom displays, head-pro relationships, and club-specific sections."]
 ];
 
-/* Early proof points worth systematizing into a reusable library. */
+/* Proof already in the wild — plus the organic signal worth naming. */
 const proofPoints = [
-  ["Jason Kelce", "Wore Del Campo socks at a PGA TOUR Pro-Am."],
-  ["Patrick Koenig", "“My favorite golf socks I've ever worn” — and his 100-hole-hike pick."],
+  ["Jason Kelce", "Wore Del Campo at a PGA TOUR Pro-Am — unprompted and unpaid."],
+  ["Patrick Koenig", "\"My favorite golf socks I’ve ever worn\" — and his 100-hole-hike pick."],
   ["Horschel Family Foundation", "A collaboration sock already in the lineup."],
-  ["Caddie Chronicles", "Real PGA TOUR caddie voices, on the bag."],
-  ["Pro-shop & big-box", "Dick's and PGA TOUR Superstore distribution."],
-  ["Golf Camp", "A live event platform for golf-native discovery."]
+  ["Caddie Chronicles", "Real PGA TOUR caddie voices, already on record and building the foundation."],
+  ["Anonymous X / Twitter", "Golf fashion accounts posting players’ fits at the US Open. Organic discovery — the right audience, the right moment, for free."]
 ];
 
 const collegePlays = [
@@ -281,45 +274,6 @@ const retailList = [
   "Custom & corporate orders."
 ];
 
-const plays = [
-  ["The Member-Guest Wedge", "Seed custom club-logo socks into premium member-guests, then convert into pro shop placement, reorders, and discovery among serious golfers."],
-  ["The Pro Shop Standard", "Custom displays, reorder programs, and club-specific sections that make Del Campo the premium sock standard inside golf shops."],
-  ["On the Bag", "Respected caddies as visible proof. A few recognizable pairs on Sunday can create serious brand memory."],
-  ["Creator Co-Branded Drops", "Creators as distribution partners: a co-branded Del Campo sock on their own merch store, launched by a caddie video."],
-  ["College Rivalry Golf", "Rivalry matches, alumni weekends, and licensed moments for tasteful, young, low-cost golf content."],
-  ["Custom Club Socks", "The core B2B wedge: club logos, tournaments, outings, resort golf, and annual reorders."],
-  ["Retail Display Program", "Premium pro shop displays that make Del Campo look like a category leader, not an afterthought."]
-];
-
-const modules = [
-  ["Growth Command Center", "See the health of the entire marketing engine."],
-  ["Campaign Builder", "Plan DTC drops, member-guest programs, retail, and content."],
-  ["Relationship CRM", "Manage caddies, club pros, creators, and partners."],
-  ["Distribution Pipeline", "Track pro shops, clubs, outings, and custom accounts."],
-  ["Creative Studio", "Briefs, content formats, UGC, photo and video needs."],
-  ["Performance Dashboard", "Measure what works across every channel."],
-  ["AI Action Queue", "Recommend the next best action across the system."]
-];
-
-const flywheel = [
-  { label: "Discover", copy: "Find the people, clubs, events, and moments that can move the brand.", accent: "var(--rf-neon)" },
-  { label: "Seed", copy: "Put the product in the right rooms before asking the market to care.", accent: "var(--rf-gold)" },
-  { label: "Create", copy: "Turn each seeded moment into content, proof, and brand memory.", accent: "var(--rf-teal)" },
-  { label: "Capture", copy: "Collect the proof, leads, and introductions each activation creates.", accent: "var(--rf-coral)" },
-  { label: "Convert", copy: "Turn attention and relationships into revenue.", accent: "var(--rf-neon)" },
-  { label: "Recycle", copy: "Use the best-performing proof across every channel.", accent: "var(--rf-gold)" },
-  { label: "Expand", copy: "Use every win to open the next relationship, account, or channel.", accent: "var(--rf-teal)" }
-];
-
-/* Falling background shapes for the events intro. */
-const dropShapes = [
-  { x: 14, y: 24, size: 150, color: "var(--rf-neon)" },
-  { x: 78, y: 18, size: 110, color: "var(--rf-gold)" },
-  { x: 64, y: 62, size: 170, color: "var(--rf-teal)" },
-  { x: 22, y: 66, size: 120, color: "var(--rf-coral)" },
-  { x: 46, y: 34, size: 90, color: "var(--rf-neon)" },
-  { x: 86, y: 52, size: 80, color: "var(--rf-teal)" }
-];
 
 /* ------------------------------------------------------------------ */
 /* Pieces                                                              */
@@ -349,43 +303,6 @@ function StatBlock({
       <motion.span className="rf-stat-rule" style={{ background: accent, scaleX }} />
       <p>{label}</p>
     </motion.div>
-  );
-}
-
-/* Drop-in shape (camera-above): scales down from large, fades out together. */
-function DropShape({
-  x,
-  y,
-  size,
-  color,
-  index,
-  progress
-}: {
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  index: number;
-  progress: MotionValue<number>;
-}) {
-  const s = 0.06 + index * 0.03;
-  const opacity = useTransform(progress, [s, s + 0.05, 0.4, 0.48], [0, 0.8, 0.8, 0]);
-  const scale = useTransform(progress, [s, s + 0.1], [2.1, 1]);
-  return (
-    <motion.span
-      className="rf-drop"
-      style={{
-        left: `${x}%`,
-        top: `${y}%`,
-        width: size,
-        height: size,
-        marginLeft: -size / 2,
-        marginTop: -size / 2,
-        background: color,
-        opacity,
-        scale
-      }}
-    />
   );
 }
 
@@ -668,72 +585,6 @@ function PillarDoc({
   );
 }
 
-function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
-  const count = flywheel.length;
-  const [active, setActive] = useState(0);
-
-  useMotionValueEvent(progress, "change", (p) => {
-    const t = (p - 0.14) / (0.9 - 0.14);
-    const idx = Math.max(0, Math.min(count - 1, Math.floor(t * count)));
-    setActive(idx);
-  });
-
-  const opacity = useTransform(progress, [0, 0.08, 0.93, 1], [0, 1, 1, 0]);
-  const scale = useTransform(progress, [0, 0.08, 0.93, 1], [0.96, 1, 1, 1.03]);
-  const stage = flywheel[active];
-
-  return (
-    <motion.div className="rf-fly" style={{ opacity, scale }}>
-      <div className="rf-center-copy rf-fly-head">
-        <Kicker>The System</Kicker>
-        <h2>Growth moves in loops, not one-off campaigns.</h2>
-      </div>
-
-      <div className="rf-fly-stage">
-        <div className="rf-fly-wheel" aria-hidden>
-          <motion.div
-            animate={{ rotate: active * (360 / count) }}
-            className="rf-fly-pointer"
-            transition={{ type: "spring", stiffness: 90, damping: 16 }}
-          />
-          <div className="rf-fly-hub">
-            <strong>Del Campo</strong>
-            <span>The premium sock brand golf actually recognizes.</span>
-          </div>
-          {flywheel.map((item, i) => (
-            <div
-              className={`rf-fly-blade ${i === active ? "is-active" : ""}`}
-              key={item.label}
-              style={{ "--a": `${i * (360 / count)}deg`, "--accent": item.accent } as React.CSSProperties}
-            >
-              <em>{item.label}</em>
-            </div>
-          ))}
-        </div>
-
-        <div className="rf-fly-detail" style={{ borderColor: stage.accent }}>
-          <span className="rf-fly-step" style={{ color: stage.accent }}>
-            Stage {active + 1} / {count} · {stage.label}
-          </span>
-          <p className="rf-fly-copy">{stage.copy}</p>
-        </div>
-      </div>
-
-      <div className="rf-fly-list" aria-hidden>
-        {flywheel.map((item, i) => (
-          <div className={`rf-fly-card ${i === active ? "is-active" : ""}`} key={item.label} style={{ borderColor: i === active ? item.accent : undefined }}>
-            <span style={{ color: item.accent }}>{String(i + 1).padStart(2, "0")}</span>
-            <div>
-              <strong>{item.label}</strong>
-              <p>{item.copy}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
@@ -802,42 +653,24 @@ export default function Home() {
         ]}
       />
 
-      {/* 4 — Why Del Campo (the base, made concrete) */}
-      <DocScene
-        height={1.9}
-        id="why"
-        kicker="The Base"
-        heading="Del Campo already moved first."
-        blocks={[
-          <p key="a">Made in America, distinctive, custom-ready — and already running more of a marketing machine than it gets credit for:</p>,
-          <div className="rf-modules" key="b">
-            {baseAssets.map(([title, body]) => (
-              <div className="rf-module" key={title}>
-                <strong>{title}</strong>
-                <p>{body}</p>
-              </div>
-            ))}
-          </div>,
-          <p className="rf-keyline" key="c">This isn&apos;t a brand standing still. It&apos;s a brand with scattered momentum — waiting to be organized into one engine.</p>
-        ]}
-      />
-
-      {/* 4b — Proof */}
+      {/* 4 — Proof */}
       <DocScene
         height={1.9}
         id="proof"
         kicker="Proof"
-        heading="The proof is already on the ground."
+        heading="The proof is already in the wild."
         blocks={[
-          <p key="a">Del Campo doesn&apos;t need to manufacture credibility. It needs to collect it — into a proof library it can reuse in ads, sell sheets, emails, and pro-shop pitches.</p>,
-          <div className="rf-modules" key="b">
+          <p className="rf-lead" key="a">Jason Kelce wore Del Campo at a Pro-Am. Patrick Koenig called them his all-time favorite pair. An anonymous golf fashion account on X posted a player wearing Del Campo at the US Open — and the brand got discovered organically, by exactly the right audience, for nothing.</p>,
+          <p key="b">That kind of proof doesn&apos;t come from campaigns. It comes from being the sock serious golfers actually reach for. The job now is to build more of it deliberately — and collect every moment into something reusable: ad creative, sell sheets, pro-shop pitches, event decks.</p>,
+          <div className="rf-modules" key="c">
             {proofPoints.map(([title, body]) => (
               <div className="rf-module" key={title}>
                 <strong>{title}</strong>
                 <p>{body}</p>
               </div>
             ))}
-          </div>
+          </div>,
+          <p className="rf-keyline" key="d">Proof compounds. Every pair in the right room is one more moment waiting to be captured.</p>
         ]}
       />
 
@@ -893,11 +726,6 @@ export default function Home() {
             </Reveal>
             <div className="rf-stage">
               <Beat progress={progress} win={[0.08, 0.16, 0.4, 0.48]}>
-                <div className="rf-drops" aria-hidden>
-                  {dropShapes.map((shape, i) => (
-                    <DropShape {...shape} index={i} key={i} progress={progress} />
-                  ))}
-                </div>
                 <div className="rf-wedge-intro">
                   <p>
                     The member-guest is one of the most valuable rooms in golf: members, guests, business owners, competitive amateurs, and people who
@@ -912,7 +740,6 @@ export default function Home() {
               <Beat progress={progress} win={[0.46, 0.54, 0.94, 0.99]}>
                 <h3 className="rf-sub">The Play</h3>
                 <Roadmap from={0.54} progress={progress} steps={memberGuestPlay} to={0.92} />
-                <p className="rf-keyline">Custom club socks are not a product. They are a market-entry strategy.</p>
               </Beat>
             </div>
           </div>
@@ -944,25 +771,34 @@ export default function Home() {
       {/* 9 — Pillar 03a: Ambassadors / Caddies */}
       <PillarScene className="rf-ambassadors" id="ambassadors" node={2} onActive={setActive}>
         {(progress) => (
-          <PillarDoc
-            heading="Players wear pants. Caddies wear shorts."
-            kicker="03 · Ambassadors"
-            progress={progress}
-            blocks={[
-              <p className="rf-lead" key="a">The best sock visibility in golf may not be on the players at all. Caddies are on the bag, in shorts, in front of cameras every weekend.</p>,
-              <p key="b">A few respected caddies in recognizable Del Campo socks on Sunday afternoon can create more brand memory than a wall of cheap influencer posts. Seed the loopers, then build “On the Bag” stories around them.</p>,
-              <figure className="rf-quote" key="q">
+          <div className="rf-doc rf-doc--side">
+            <div className="rf-side-main">
+              <Reveal className="rf-doc-head" index={0} progress={progress}>
+                <Kicker>03 · Ambassadors</Kicker>
+                <h2>Players wear pants. Caddies wear shorts.</h2>
+              </Reveal>
+              <Reveal className="rf-doc-block" index={1} progress={progress}>
+                <p className="rf-lead">The best sock visibility in golf may not be on the players at all. Caddies are on the bag, in shorts, in front of cameras every weekend.</p>
+              </Reveal>
+              <Reveal className="rf-doc-block" index={2} progress={progress}>
+                <p>A few respected caddies in recognizable Del Campo socks on Sunday afternoon can create more brand memory than a wall of cheap influencer posts. Seed the loopers, then build &ldquo;On the Bag&rdquo; stories around them.</p>
+              </Reveal>
+              <Reveal className="rf-doc-block" index={3} progress={progress}>
+                <p className="rf-keyline">Caddies are not vanity influencers. They are culture carriers.</p>
+              </Reveal>
+            </div>
+            <Reveal className="rf-side-aside" index={1} progress={progress}>
+              <figure className="rf-quote-card">
                 <blockquote>
-                  “Our members make their living on their feet — so foot care is critical. Our guys don&apos;t think of socks as just a fashion item — they need real gear that performs and keeps them going.”
+                  &ldquo;Our members make their living on their feet — so foot care is critical. Our guys don&apos;t think of socks as just a fashion item — they need real gear that performs and keeps them going.&rdquo;
                 </blockquote>
                 <figcaption>
                   <strong>James Edmonson</strong>
-                  Longtime PGA Tour Caddie · President, Association of Professional Tour Caddies (APTC)
+                  <span>Longtime PGA Tour Caddie · President, Association of Professional Tour Caddies (APTC)</span>
                 </figcaption>
-              </figure>,
-              <p className="rf-keyline" key="c">Caddies are not vanity influencers. They are culture carriers.</p>
-            ]}
-          />
+              </figure>
+            </Reveal>
+          </div>
         )}
       </PillarScene>
 
@@ -988,19 +824,19 @@ export default function Home() {
         )}
       </PillarScene>
 
-      {/* 10 — Pillar 04: Media + Commerce */}
-      <PillarScene className="rf-content" height={3.2} id="content" node={3} onActive={setActive}>
+      {/* 10a — Pillar 04: Media */}
+      <PillarScene className="rf-content" id="content" node={3} onActive={setActive}>
         {(progress) => (
           <PillarDoc
-            heading="Creators aren't ambassadors. They're distribution."
-            kicker="04 · Media + Commerce"
+            heading="Golf media is where the culture lives."
+            kicker="04 · Media"
             progress={progress}
             blocks={[
-              <p className="rf-lead" key="a">YouTube golf is now a massive culture-and-commerce channel — Good Good, Bob Does Sports, Fore Play, Grant Horvat. Del Campo&apos;s own presence there looks underdeveloped next to the size of it.</p>,
-              <p key="b">The move isn&apos;t to become Good Good. It&apos;s tasteful golf media — &ldquo;On the Bag&rdquo; video built from the Caddie Chronicles foundation that already exists — plus treating creators as distribution partners: a co-branded Del Campo sock, their logo, sold on their own merch store.</p>,
-              <p key="c">Tie it to commerce. A Del Campo caddie loops for the group on camera; the video launches the limited co-branded drop; the drop drives sales; the content becomes proof you reuse in ads and pro-shop materials. That&apos;s the Malbon lesson, told with restraint instead of shock value.</p>,
+              <p className="rf-lead" key="a">YouTube golf is now a massive culture channel — Good Good, Bob Does Sports, Fore Play, Grant Horvat. Del Campo&apos;s own presence looks underdeveloped next to the size of it.</p>,
+              <p key="b">The move isn&apos;t to become Good Good. It&apos;s &ldquo;On the Bag&rdquo; — tasteful caddie content built from the Caddie Chronicles foundation that already exists. Golf-native, not a circus.</p>,
+              <p key="c">On X, anonymous golf fashion accounts post players&apos; tournament fits to audiences of serious golfers. When one of those posts features Del Campo, that&apos;s earned discovery at exactly the right moment — for nothing.</p>,
               <div className="rf-formats" key="d">
-                {formats.map(([title, body]) => (
+                {mediaFormats.map(([title, body]) => (
                   <div className="rf-format" key={title}>
                     <strong>{title}</strong>
                     <p>{body}</p>
@@ -1008,6 +844,30 @@ export default function Home() {
                 ))}
               </div>,
               <p className="rf-keyline" key="e">The mechanic is Good Good. The tone is &ldquo;I know what those are&rdquo; — never &ldquo;what is he wearing?&rdquo;</p>
+            ]}
+          />
+        )}
+      </PillarScene>
+
+      {/* 10b — Pillar 04: Commerce */}
+      <PillarScene className="rf-content" id="commerce" node={3} onActive={setActive}>
+        {(progress) => (
+          <PillarDoc
+            heading="Creators aren't ambassadors. They're distribution."
+            kicker="04 · Commerce"
+            progress={progress}
+            blocks={[
+              <p className="rf-lead" key="a">Co-branded Del Campo socks — their logo, their audience, sold on their own merch store. The creator gets a product. Del Campo gets the placement.</p>,
+              <p key="b">A caddie loops for the group on camera. The video launches the co-branded drop. The drop drives sales. The content becomes proof Del Campo reuses in ads and pro-shop materials. That&apos;s the Malbon lesson — told with restraint instead of shock value.</p>,
+              <div className="rf-formats" key="c">
+                {commerceFormats.map(([title, body]) => (
+                  <div className="rf-format" key={title}>
+                    <strong>{title}</strong>
+                    <p>{body}</p>
+                  </div>
+                ))}
+              </div>,
+              <p className="rf-keyline" key="d">Content drives commerce. Commerce proves content is worth making.</p>
             ]}
           />
         )}
@@ -1037,14 +897,15 @@ export default function Home() {
         <div className="rf-journey-tail" ref={tailRef} aria-hidden />
       </div>
 
-      {/* 12 — Brand Memory (coda to the engine) */}
+      {/* 12 — The Compound (synthesis of the engine) */}
       <DocScene
         id="memory"
-        kicker="Brand Memory"
-        heading="The club logo gets it worn. The Del Campo name gets it remembered."
+        kicker="The Compound"
+        heading="Five channels. One brand that's impossible to miss."
         blocks={[
-          <p key="a">The smiley can become iconic over time — but today, custom socks need the Del Campo name on them. The logo creates the reason to wear them. The wordmark creates the memory. The comfort creates the reorder.</p>,
-          <div key="b">
+          <p className="rf-lead" key="a">Events plant the sock in the right rooms. Green grass stocks it in every pro shop. Caddies make it credible on Sunday afternoon. Media spreads the proof. Retail captures the demand each channel creates.</p>,
+          <p key="b">None of these moves is expensive in isolation. Together, they make Del Campo the sock that appears everywhere golf culture lives — and that&apos;s when the brand becomes self-reinforcing.</p>,
+          <div key="c">
             <h3 className="rf-sub">Every custom club sock carries three things</h3>
             <div className="rf-rule">
               {productRule.map(([title, body]) => (
@@ -1058,63 +919,20 @@ export default function Home() {
         ]}
       />
 
-      {/* 13 — The Growth Flywheel */}
-      <ScrollScene className="rf-flywheel" height={4} id="flywheel">
-        {(progress) => <GrowthFlywheel progress={progress} />}
-      </ScrollScene>
-
-      {/* 14 — The First Strategic Plays */}
-      <DocScene
-        height={1.9}
-        id="plays"
-        kicker="The First Moves"
-        heading="Campaigns become the operating system."
-        blocks={[
-          <div className="rf-plays" key="a">
-            {plays.map(([title, body], i) => (
-              <div className="rf-play" key={title}>
-                <span>{String(i + 1).padStart(2, "0")}</span>
-                <strong>{title}</strong>
-                <p>{body}</p>
-              </div>
-            ))}
-          </div>
-        ]}
-      />
-
-      {/* 15 — The Operating System */}
-      <DocScene
-        height={1.8}
-        id="engine"
-        kicker="The Engine"
-        heading="The public story needs a private system behind it."
-        blocks={[
-          <p className="rf-keyline" key="a">The Del Campo Growth Engine turns the strategy into a working system — so the brand compounds instead of running random marketing.</p>,
-          <div className="rf-modules" key="b">
-            {modules.map(([title, body]) => (
-              <div className="rf-module" key={title}>
-                <strong>{title}</strong>
-                <p>{body}</p>
-              </div>
-            ))}
-          </div>
-        ]}
-      />
-
-      {/* 16 — Closing */}
+      {/* 13 — Closing */}
       <ScrollScene className="rf-final" height={1.9}>
         {(progress) => (
           <div className="rf-doc">
             <Reveal className="rf-doc-head" index={0} progress={progress}>
               <Kicker>The Where</Kicker>
-              <h2>From small sock brand to golf&apos;s most recognizable sock company.</h2>
+              <h2>From Del Campo — to the sock golf recognizes.</h2>
             </Reveal>
             <Lines
               base={0.22}
               items={[
-                "The path is not to become louder. It is to become more present.",
-                "Present in the pro shop. At the member-guest. On the caddie. In the college rivalry. In the custom tee gift. In the content serious golfers respect.",
-                "Del Campo already has the product. The next step is the system."
+                "Not louder. More present.",
+                "Present at the member-guest. On the caddie's bag Sunday. In the pro shop. In the college rivalry. In the limited drop that sells out.",
+                "Del Campo already has the product. The system is what compounds it."
               ]}
               progress={progress}
             />
