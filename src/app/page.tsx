@@ -413,30 +413,29 @@ function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement |
 
 function JourneyRail({
   engineRef,
-  journeyRef,
+  tailRef,
   active
 }: {
   engineRef: React.RefObject<HTMLElement | null>;
-  journeyRef: React.RefObject<HTMLElement | null>;
+  tailRef: React.RefObject<HTMLElement | null>;
   active: number;
 }) {
   const { scrollYProgress: eP } = useScroll({ target: engineRef, offset: ["start start", "end end"] });
-  // Anchored to the journey END so it only ramps during the final viewport.
-  const { scrollYProgress: tailP } = useScroll({ target: journeyRef, offset: ["end end", "end start"] });
+  // A small sentinel at the very end of the journey drives the fade-out.
+  const { scrollYProgress: tailP } = useScroll({ target: tailRef, offset: ["start end", "start center"] });
 
   // 0 = full web, 1 = collapsed timeline bar. Holds at 1 once past the engine.
   const morph = useTransform(eP, [0.5, 0.9], [0, 1]);
 
   // Fade the whole rail in as the engine starts, out only as the journey ends.
   const fadeIn = useTransform(eP, [0, 0.04], [0, 1]);
-  const fadeOut = useTransform(tailP, [0.4, 0.85], [1, 0]);
+  const fadeOut = useTransform(tailP, [0.2, 0.7], [1, 0]);
   const railShow = useTransform([fadeIn, fadeOut] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
 
   const hubOpacity = useTransform(eP, [0.04, 0.14, 0.44, 0.56], [0, 1, 1, 0]);
   const subOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 1, 1, 0]);
   const meshOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 0.4, 0.4, 0]);
   const railLineOpacity = useTransform(eP, [0.08, 0.2], [0, 1]);
-  const nodeOpacity = useTransform(eP, [0.02, 0.14], [0, 1]);
 
   const barY = 9;
   const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], 10 + i * 20, m)));
@@ -501,12 +500,12 @@ function JourneyRail({
               y2={nodeY[b]}
             />
           ))}
-          {/* rail chain — bold lime as each segment is reached */}
+          {/* rail chain — bold black as each segment is reached */}
           {railLinks.map(([a, b], i) => (
             <motion.line
               className={`rf-wire-live ${active >= b ? "is-on" : ""}`}
               key={`rl${i}`}
-              stroke="var(--rf-neon)"
+              stroke="var(--rf-cream)"
               strokeWidth={0.5}
               x1={nodeX[a]}
               x2={nodeX[b]}
@@ -544,7 +543,7 @@ function JourneyRail({
             <motion.div
               className="rf-rail-node"
               key={n.label}
-              style={{ left: useTransform(nodeX[i], (v) => `${v}%`), top: useTransform(nodeY[i], (v) => `${v}%`), opacity: nodeOpacity }}
+              style={{ left: useTransform(nodeX[i], (v) => `${v}%`), top: useTransform(nodeY[i], (v) => `${v}%`) }}
             >
               <motion.span className={`rf-rail-disc ${filled ? "is-on" : ""}`} style={{ width: nodeSizes[i], height: nodeSizes[i] }}>
                 <span className={`rf-rail-fill ${filled ? "is-on" : ""}`} />
@@ -706,7 +705,7 @@ function GrowthFlywheel({ progress }: { progress: MotionValue<number> }) {
 
 export default function Home() {
   const engineRef = useRef<HTMLElement | null>(null);
-  const journeyRef = useRef<HTMLDivElement | null>(null);
+  const tailRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(-1);
   return (
     <main className="rf-page">
@@ -813,8 +812,8 @@ export default function Home() {
 
       {/* 6 — The journey: engine network morphs into a persistent rail that
           stays pinned at the top through all five pillars */}
-      <div className="rf-journey" ref={journeyRef}>
-        <JourneyRail active={active} engineRef={engineRef} journeyRef={journeyRef} />
+      <div className="rf-journey">
+        <JourneyRail active={active} engineRef={engineRef} tailRef={tailRef} />
 
         {/* The Marketing Engine heading; the web assembles below it */}
         <section className="rf-scene rf-engine-track" id="engine-view" ref={engineRef} style={{ minHeight: "340vh" }}>
@@ -962,6 +961,7 @@ export default function Home() {
           />
         )}
       </PillarScene>
+        <div className="rf-journey-tail" ref={tailRef} aria-hidden />
       </div>
 
       {/* 12 — Brand Memory (coda to the engine) */}
