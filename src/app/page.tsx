@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, MotionValue, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
@@ -437,8 +437,21 @@ function JourneyRail({
   const meshOpacity = useTransform(eP, [0.06, 0.18, 0.42, 0.54], [0, 0.4, 0.4, 0]);
   const railLineOpacity = useTransform(eP, [0.08, 0.2], [0, 1]);
 
+  // Track viewport width so the collapsed bar can land on the content column
+  // (1000px, centered) in real pixels — full-width web, content-aligned bar.
+  const [vw, setVw] = useState(1440);
+  useEffect(() => {
+    const update = () => setVw(window.innerWidth);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  const COLUMN = 1000;
+  // bar slot for node i as a viewport % (50% +/- pixels of the content column)
+  const barX = engineNodes.map((_, i) => 50 + (((i - 2) * (COLUMN / 4)) / vw) * 100);
+
   const barY = 9;
-  const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], 10 + i * 20, m)));
+  const nodeX = engineNodes.map((n, i) => useTransform(morph, (m) => lerp(n.net[0], barX[i], m)));
   const nodeY = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.net[1], barY, m)));
   const nodeSizes = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 26, m)));
   const hubX = useTransform(morph, (m) => lerp(HUB.net[0], 50, m));
@@ -447,7 +460,6 @@ function JourneyRail({
   return (
     <motion.div className="rf-rail" aria-hidden style={{ opacity: railShow }}>
       <div className="rf-rail-stage">
-        <div className="rf-rail-inner">
         <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
           {/* hub spokes — fade out */}
           {engineNodes.map((_, i) => (
@@ -553,7 +565,6 @@ function JourneyRail({
             </motion.div>
           );
         })}
-        </div>
       </div>
     </motion.div>
   );
