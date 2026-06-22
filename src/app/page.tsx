@@ -903,6 +903,15 @@ export default function Home() {
             blocks={[
               <p className="rf-lead" key="a">The best sock visibility in golf may not be on the players at all. Caddies are on the bag, in shorts, in front of cameras every weekend.</p>,
               <p key="b">A few respected caddies in recognizable Del Campo socks on Sunday afternoon can create more brand memory than a wall of cheap influencer posts. Seed the loopers, then build “On the Bag” stories around them.</p>,
+              <figure className="rf-quote" key="q">
+                <blockquote>
+                  “Our members make their living on their feet — so foot care is critical. Our guys don&apos;t think of socks as just a fashion item — they need real gear that performs and keeps them going.”
+                </blockquote>
+                <figcaption>
+                  <strong>James Edmonson</strong>
+                  Longtime PGA Tour Caddie · President, Association of Professional Tour Caddies (APTC)
+                </figcaption>
+              </figure>,
               <p className="rf-keyline" key="c">Caddies are not vanity influencers. They are culture carriers.</p>
             ]}
           />

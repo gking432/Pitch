@@ -1548,6 +1548,34 @@ html {
   margin: 0 0 6px;
 }
 
+.rf-quote {
+  border-left: 4px solid var(--rf-neon);
+  margin: 0;
+  padding-left: clamp(18px, 2vw, 28px);
+}
+
+.rf-quote blockquote {
+  color: var(--rf-cream);
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.32;
+  margin: 0;
+}
+
+.rf-quote figcaption {
+  color: var(--rf-muted);
+  font-size: clamp(0.78rem, 1.1vw, 0.95rem);
+  line-height: 1.4;
+  margin-top: 16px;
+}
+
+.rf-quote figcaption strong {
+  color: var(--rf-cream);
+  display: block;
+  font-weight: 850;
+}
+
 .rf-doc .rf-cta {
   margin-top: clamp(14px, 2.4vh, 26px);
 }
