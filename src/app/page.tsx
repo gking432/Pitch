@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, MotionValue, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
+import { motion, MotionValue, useMotionTemplate, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -191,11 +191,15 @@ function BurstBody({
   heading: BurstLineData[];
   sub?: React.ReactNode;
 }) {
-  // The iris: pinpoint -> floods the screen -> holds -> collapses back.
-  const scale = useTransform(progress, [0, 0.28, 0.72, 0.98], [0, 1, 1, 0]);
+  // The iris is a circular clip-path aperture, not a scaled object: a point in
+  // the void blooms to 75% (clears the viewport corners), HOLDS open across the
+  // content window, then collapses back to a point. A spring gives it weight.
+  const rawClip = useTransform(progress, [0.06, 0.3, 0.74, 0.94], [0, 75, 75, 0]);
+  const clipR = useSpring(rawClip, { stiffness: 80, damping: 26 });
+  const clip = useMotionTemplate`circle(${clipR}% at 50% 50%)`;
   return (
     <>
-      <motion.div aria-hidden className="rf-burst-iris" style={{ scale }} />
+      <motion.div aria-hidden className="rf-burst-iris" style={{ clipPath: clip, WebkitClipPath: clip }} />
       <div className="rf-burst-content">
         {kicker ? (
           <BurstFade from={0.32} progress={progress}>
@@ -253,31 +257,31 @@ const stats = [
   { value: "8.1M", label: "Women and girls on-course, a record share.", accent: "var(--rf-coral)" }
 ];
 
-/* The lime hub the whole engine hangs off of. */
-const HUB = { net: [50, 64], size: 64 };
+/* The lime hub sits dead center; everything springs out from it. */
+const HUB = { net: [50, 50], size: 64 };
 
-/* Five pillar nodes, clustered + jumbled in a compact band below the
-   heading, that collapse into evenly spaced top-bar slots (10..90%). */
+/* Five pillar nodes, ringed around the centered hub (x roughly increasing so
+   the later collapse into the left-to-right timeline bar reads cleanly). */
 const engineNodes = [
-  { label: "Events", net: [33, 56], size: 38 },
-  { label: "Green Grass", net: [43, 76], size: 34 },
-  { label: "Ambassadors", net: [51, 50], size: 40 },
-  { label: "Media", net: [61, 74], size: 34 },
-  { label: "Retail", net: [68, 58], size: 36 }
+  { label: "Events", net: [22, 42], size: 38 },
+  { label: "Green Grass", net: [34, 72], size: 34 },
+  { label: "Ambassadors", net: [50, 24], size: 40 },
+  { label: "Media", net: [66, 70], size: 34 },
+  { label: "Retail", net: [78, 44], size: 36 }
 ];
 
-/* Small supporting nodes clustered around their pillar; fade on collapse. */
+/* Two satellites per pillar, in an outer ring beyond their parent node. */
 const subNodes = [
-  { label: "Member-guests", parent: 0, net: [25, 47], size: 18 },
-  { label: "Tournaments", parent: 0, net: [26, 64], size: 22 },
-  { label: "Pro shops", parent: 1, net: [37, 85], size: 16 },
-  { label: "Reorders", parent: 1, net: [49, 84], size: 20 },
-  { label: "Caddies", parent: 2, net: [45, 42], size: 16 },
-  { label: "College", parent: 2, net: [57, 43], size: 20 },
-  { label: "Course stories", parent: 3, net: [57, 85], size: 18 },
-  { label: "Creators", parent: 3, net: [70, 82], size: 16 },
-  { label: "DTC", parent: 4, net: [76, 51], size: 20 },
-  { label: "Wholesale", parent: 4, net: [75, 68], size: 16 }
+  { label: "Member-guests", parent: 0, net: [10, 30], size: 18 },
+  { label: "Tournaments", parent: 0, net: [12, 54], size: 22 },
+  { label: "Pro shops", parent: 1, net: [20, 84], size: 16 },
+  { label: "Reorders", parent: 1, net: [40, 86], size: 20 },
+  { label: "Caddies", parent: 2, net: [42, 11], size: 16 },
+  { label: "College", parent: 2, net: [60, 11], size: 20 },
+  { label: "Course stories", parent: 3, net: [64, 86], size: 18 },
+  { label: "Creators", parent: 3, net: [82, 82], size: 16 },
+  { label: "DTC", parent: 4, net: [90, 31], size: 20 },
+  { label: "Wholesale", parent: 4, net: [92, 54], size: 16 }
 ];
 
 /* The chain that becomes the timeline rail (stays through the morph). */
@@ -433,9 +437,10 @@ function RoadStep({ step, index, progress, s }: { step: string; index: number; p
 
 function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
   const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
-  // Heading reads first, then clears out of the way as the web explodes (~0.12).
-  const opacity = useTransform(scrollYProgress, [0.0, 0.04, 0.1, 0.18], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0.0, 0.04], [0.96, 1]);
+  // Heading reads first over the centered hub, then clears before the nodes
+  // start firing out (~0.12) so the build has a clean stage.
+  const opacity = useTransform(scrollYProgress, [0.0, 0.03, 0.09, 0.14], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0.0, 0.03], [0.96, 1]);
   return (
     <motion.div className="rf-engine-text" style={{ opacity, scale }}>
       <Kicker>The Marketing Engine</Kicker>
@@ -458,25 +463,40 @@ function JourneyRail({
   // A small sentinel at the very end of the journey drives the fade-out.
   const { scrollYProgress: tailP } = useScroll({ target: tailRef, offset: ["start end", "start center"] });
 
-  // Phase 1: explode — the five nodes (and their satellites) fly out from the
-  // hub to form the web. Phase 2: morph — the web collapses into the bar.
-  const explode = useTransform(eP, [0.12, 0.3], [0, 1]);
-  const morph = useTransform(eP, [0.55, 0.9], [0, 1]);
+  // Choreographed build along the engine scroll:
+  //   ~0.14–0.41  the five pillar nodes fire out of the hub, one at a time
+  //   ~0.42–0.61  each node's two satellites fire out, one at a time
+  //   ~0.60–0.68  the labels (all the words) fade up
+  //   ~0.76–0.94  the whole web collapses up into the timeline bar
+  const morph = useTransform(eP, [0.76, 0.94], [0, 1]);
 
   // Fade the whole rail in as the engine starts, out only as the journey ends.
   const fadeIn = useTransform(eP, [0, 0.02], [0, 1]);
   const fadeOut = useTransform(tailP, [0.2, 0.7], [1, 0]);
   const railShow = useTransform([fadeIn, fadeOut] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
 
-  // The hub is the only thing on screen at first; it holds, then fades as the
-  // web morphs into the bar.
-  const hubOpacity = useTransform(eP, [0, 0.05, 0.5, 0.6], [0, 1, 1, 0]);
-  // Nodes appear as they fly out, then stay solid forever (through the pillars).
-  const nodeAppear = useTransform(explode, [0, 0.25], [0, 1]);
-  const spokeOpacity = useTransform(eP, [0.12, 0.24, 0.5, 0.58], [0, 1, 1, 0]);
-  const subOpacity = useTransform(eP, [0.16, 0.3, 0.48, 0.56], [0, 1, 1, 0]);
-  const meshOpacity = useTransform(eP, [0.16, 0.3, 0.48, 0.56], [0, 0.4, 0.4, 0]);
-  const railLineOpacity = useTransform(eP, [0.32, 0.42], [0, 1]);
+  // Web ornamentation (hub, spokes, mesh, satellites) fades as the bar forms.
+  const webFade = useTransform(eP, [0.74, 0.84], [1, 0]);
+  const hubIn = useTransform(eP, [0, 0.04], [0, 1]);
+  const hubOpacity = useTransform([hubIn, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
+  const labelsIn = useTransform(eP, [0.6, 0.68], [0, 1]);
+  const subLabelOpacity = useTransform([labelsIn, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
+  const meshOpacity = useTransform(eP, [0.36, 0.46, 0.74, 0.82], [0, 0.32, 0.32, 0]);
+  const railLineOpacity = useTransform(eP, [0.6, 0.7], [0, 1]);
+
+  // Per-node emergence (staggered) — the "one at a time" firing.
+  const mainEmerge = engineNodes.map((_, i) => {
+    const s = 0.14 + i * 0.05;
+    return useTransform(eP, [s, s + 0.07], [0, 1]);
+  });
+  const subEmerge = subNodes.map((_, i) => {
+    const s = 0.42 + i * 0.016;
+    return useTransform(eP, [s, s + 0.05], [0, 1]);
+  });
+  // Dots appear as they fire and stay solid; satellites/spokes fade on collapse.
+  const nodeOpacity = mainEmerge.map((e) => useTransform(e, [0, 0.25], [0, 1]));
+  const spokeOpacity = mainEmerge.map((e) => useTransform([e, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b)));
+  const subDotOpacity = subEmerge.map((e) => useTransform([e, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b)));
 
   // Track viewport width so the collapsed bar can land on the content column
   // (1000px, centered) in real pixels — full-width web, content-aligned bar.
@@ -492,32 +512,31 @@ function JourneyRail({
   const barX = engineNodes.map((_, i) => 50 + (((i - 2) * (COLUMN / 4)) / vw) * 100);
 
   const barY = 9;
-  // Each node: from hub center -> net scatter (explode) -> bar slot (morph).
-  const ev = [explode, morph] as MotionValue[];
+  // Each node: hub center -> net position (its own emerge) -> bar slot (morph).
   const nodeX = engineNodes.map((n, i) =>
-    useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[0], n.net[0], e), barX[i], m))
+    useTransform([mainEmerge[i], morph] as MotionValue[], ([e, m]: number[]) => lerp(lerp(HUB.net[0], n.net[0], e), barX[i], m))
   );
-  const nodeY = engineNodes.map((n) =>
-    useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[1], n.net[1], e), barY, m))
+  const nodeY = engineNodes.map((n, i) =>
+    useTransform([mainEmerge[i], morph] as MotionValue[], ([e, m]: number[]) => lerp(lerp(HUB.net[1], n.net[1], e), barY, m))
   );
   const nodeSizes = engineNodes.map((n) => useTransform(morph, (m) => lerp(n.size, 26, m)));
-  // Satellites fly out from the hub on explode and collapse back in on morph.
-  const subX = subNodes.map((s) => useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[0], s.net[0], e), HUB.net[0], m)));
-  const subY = subNodes.map((s) => useTransform(ev, ([e, m]: number[]) => lerp(lerp(HUB.net[1], s.net[1], e), HUB.net[1], m)));
-  const hubX = useTransform(morph, (m) => lerp(HUB.net[0], 50, m));
+  // Satellites fly out from their PARENT node to their net spot, then fade.
+  const subX = subNodes.map((s, i) => useTransform(subEmerge[i], (e) => lerp(engineNodes[s.parent].net[0], s.net[0], e)));
+  const subY = subNodes.map((s, i) => useTransform(subEmerge[i], (e) => lerp(engineNodes[s.parent].net[1], s.net[1], e)));
+  const hubX = useTransform(morph, () => 50);
   const hubY = useTransform(morph, (m) => lerp(HUB.net[1], barY, m));
 
   return (
     <motion.div className="rf-rail" aria-hidden style={{ opacity: railShow }}>
       <div className="rf-rail-stage">
         <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
-          {/* hub spokes — draw out as the nodes fly, then fade */}
+          {/* hub spokes — draw out as each node fires, then fade */}
           {engineNodes.map((_, i) => (
             <motion.line
               key={`h${i}`}
               stroke="var(--rf-neon)"
               strokeWidth={0.14}
-              style={{ opacity: spokeOpacity }}
+              style={{ opacity: spokeOpacity[i] }}
               x1={hubX}
               x2={nodeX[i]}
               y1={hubY}
@@ -537,13 +556,13 @@ function JourneyRail({
               y2={nodeY[b]}
             />
           ))}
-          {/* sub-to-parent links — fly out with the satellites, then fade */}
+          {/* sub-to-parent links — fly out with each satellite, then fade */}
           {subNodes.map((s, i) => (
             <motion.line
               key={`s${i}`}
               stroke="var(--rf-line)"
               strokeWidth={0.1}
-              style={{ opacity: subOpacity }}
+              style={{ opacity: subDotOpacity[i] }}
               x1={subX[i]}
               x2={nodeX[s.parent]}
               y1={subY[i]}
@@ -578,7 +597,7 @@ function JourneyRail({
           ))}
         </svg>
 
-        {/* supporting nodes with labels */}
+        {/* supporting nodes — dots fire out first, labels fade up after */}
         {subNodes.map((s, i) => (
           <motion.div
             className="rf-subnode"
@@ -586,11 +605,13 @@ function JourneyRail({
             style={{
               left: useTransform(subX[i], (v) => `${v}%`),
               top: useTransform(subY[i], (v) => `${v}%`),
-              opacity: subOpacity
+              opacity: subDotOpacity[i]
             }}
           >
             <span className="rf-net-dot" style={{ width: s.size, height: s.size }} />
-            <span className="rf-subnode-label">{s.label}</span>
+            <motion.span className="rf-subnode-label" style={{ opacity: subLabelOpacity }}>
+              {s.label}
+            </motion.span>
           </motion.div>
         ))}
 
@@ -613,13 +634,15 @@ function JourneyRail({
               style={{
                 left: useTransform(nodeX[i], (v) => `${v}%`),
                 top: useTransform(nodeY[i], (v) => `${v}%`),
-                opacity: nodeAppear
+                opacity: nodeOpacity[i]
               }}
             >
               <motion.span className={`rf-rail-disc ${filled ? "is-on" : ""}`} style={{ width: nodeSizes[i], height: nodeSizes[i] }}>
                 <span className={`rf-rail-fill ${filled ? "is-on" : ""}`} />
               </motion.span>
-              <span className={`rf-rail-label ${active === i ? "is-active" : ""}`}>{n.label}</span>
+              <motion.span className={`rf-rail-label ${active === i ? "is-active" : ""}`} style={{ opacity: labelsIn }}>
+                {n.label}
+              </motion.span>
             </motion.div>
           );
         })}
@@ -831,7 +854,7 @@ export default function Home() {
         <JourneyRail active={active} engineRef={engineRef} tailRef={tailRef} />
 
         {/* The Marketing Engine heading; the web assembles below it */}
-        <section className="rf-scene rf-engine-track" id="engine-view" ref={engineRef} style={{ minHeight: "340vh" }}>
+        <section className="rf-scene rf-engine-track" id="engine-view" ref={engineRef} style={{ minHeight: "480vh" }}>
           <div className="rf-sticky">
             <EngineHeading targetRef={engineRef} />
           </div>
@@ -861,6 +884,7 @@ export default function Home() {
               <Beat progress={progress} win={[0.46, 0.54, 0.94, 0.99]}>
                 <h3 className="rf-sub">The Play</h3>
                 <Roadmap from={0.54} progress={progress} steps={memberGuestPlay} to={0.92} />
+                <p className="rf-keyline">One event opens a pro shop, a reorder, and a room full of new golfers.</p>
               </Beat>
             </div>
           </div>

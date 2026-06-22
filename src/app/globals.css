@@ -1509,16 +1509,12 @@ html {
   padding: 0;
 }
 
-/* The flooding circle: sized past the viewport diagonal so scale 1 fills. */
+/* The flooding aperture: a full-bleed colour panel revealed through a
+   circular clip-path whose radius is driven by scroll. */
 .rf-burst-iris {
-  border-radius: 50%;
-  height: 150vmax;
-  left: 50%;
+  inset: 0;
   position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 150vmax;
-  will-change: transform;
+  will-change: clip-path;
   z-index: 0;
 }
 
