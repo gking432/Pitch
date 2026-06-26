@@ -1549,6 +1549,21 @@ html {
   will-change: transform, opacity;
 }
 
+/* "Scroll" cue sitting on the hero's small opening disc */
+.rf-burst-hint {
+  color: #f4f7ee;
+  font-size: clamp(0.66rem, 0.95vw, 0.82rem);
+  font-weight: 850;
+  left: 50%;
+  letter-spacing: 0.32em;
+  position: absolute;
+  text-transform: uppercase;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  z-index: 2;
+}
+
 .rf-burst-kicker {
   color: var(--rf-neon);
   display: inline-block;
@@ -2223,9 +2238,9 @@ html {
 }
 
 .rf-rail-label {
-  color: var(--rf-muted);
-  font-size: clamp(0.6rem, 1vw, 0.76rem);
-  font-weight: 850;
+  color: var(--rf-cream);
+  font-size: clamp(0.62rem, 1vw, 0.78rem);
+  font-weight: 900;
   left: 50%;
   letter-spacing: 0.07em;
   position: absolute;
@@ -2238,7 +2253,7 @@ html {
 }
 
 .rf-rail-label.is-active {
-  color: var(--rf-cream);
+  color: var(--rf-green);
 }
 
 /* engine heading sits in the upper area; the web assembles below it */

@@ -164,7 +164,10 @@ function BurstStatement({
   kicker,
   heading,
   sub,
-  height = 2.6
+  height = 2.6,
+  startRadius = 0,
+  collapseTo = 0,
+  scrollHint = false
 }: {
   id?: string;
   theme?: "black" | "green" | "lime";
@@ -172,10 +175,23 @@ function BurstStatement({
   heading: BurstLineData[];
   sub?: React.ReactNode;
   height?: number;
+  startRadius?: number;
+  collapseTo?: number;
+  scrollHint?: boolean;
 }) {
   return (
     <ScrollScene className={`rf-burst rf-burst--${theme}`} height={height} id={id}>
-      {(progress) => <BurstBody heading={heading} kicker={kicker} progress={progress} sub={sub} />}
+      {(progress) => (
+        <BurstBody
+          collapseTo={collapseTo}
+          heading={heading}
+          kicker={kicker}
+          progress={progress}
+          scrollHint={scrollHint}
+          startRadius={startRadius}
+          sub={sub}
+        />
+      )}
     </ScrollScene>
   );
 }
@@ -184,22 +200,37 @@ function BurstBody({
   progress,
   kicker,
   heading,
-  sub
+  sub,
+  startRadius = 0,
+  collapseTo = 0,
+  scrollHint = false
 }: {
   progress: MotionValue<number>;
   kicker?: React.ReactNode;
   heading: BurstLineData[];
   sub?: React.ReactNode;
+  startRadius?: number;
+  collapseTo?: number;
+  scrollHint?: boolean;
 }) {
-  // The iris is a circular clip-path aperture, not a scaled object: a point in
-  // the void blooms to 75% (clears the viewport corners), HOLDS open across the
-  // content window, then collapses back to a point. A spring gives it weight.
-  const rawClip = useTransform(progress, [0.06, 0.3, 0.74, 0.94], [0, 75, 75, 0]);
+  // The iris is a circular clip-path aperture, not a scaled object: it can start
+  // as a small disc (startRadius) or a point, blooms to 75% (clears the viewport
+  // corners), HOLDS open across the content window, then collapses — either back
+  // to a point or down to a small disc (collapseTo) for a hand-off to the next
+  // section. A spring gives it weight.
+  const rawClip = useTransform(progress, [0, 0.3, 0.74, 0.93], [startRadius, 75, 75, collapseTo]);
   const clipR = useSpring(rawClip, { stiffness: 80, damping: 26 });
   const clip = useMotionTemplate`circle(${clipR}% at 50% 50%)`;
+  // The "scroll" hint sits on the small starting disc and clears fast as it blooms.
+  const hintOpacity = useTransform(progress, [0, 0.05, 0.1], [1, 1, 0]);
   return (
     <>
       <motion.div aria-hidden className="rf-burst-iris" style={{ clipPath: clip, WebkitClipPath: clip }} />
+      {scrollHint ? (
+        <motion.span aria-hidden className="rf-burst-hint" style={{ opacity: hintOpacity }}>
+          Scroll
+        </motion.span>
+      ) : null}
       <div className="rf-burst-content">
         {kicker ? (
           <BurstFade from={0.32} progress={progress}>
@@ -437,10 +468,10 @@ function RoadStep({ step, index, progress, s }: { step: string; index: number; p
 
 function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
   const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
-  // Heading reads first over the centered hub, then clears before the nodes
-  // start firing out (~0.12) so the build has a clean stage.
-  const opacity = useTransform(scrollYProgress, [0.0, 0.03, 0.09, 0.14], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0.0, 0.03], [0.96, 1]);
+  // The hub (the lime dot the Chapter 04 circle became) reads alone for a beat,
+  // then the heading rises over it, then clears before the nodes fire (~0.2).
+  const opacity = useTransform(scrollYProgress, [0.04, 0.08, 0.16, 0.2], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0.04, 0.08], [0.96, 1]);
   return (
     <motion.div className="rf-engine-text" style={{ opacity, scale }}>
       <Kicker>The Marketing Engine</Kicker>
@@ -464,33 +495,38 @@ function JourneyRail({
   const { scrollYProgress: tailP } = useScroll({ target: tailRef, offset: ["start end", "start center"] });
 
   // Choreographed build along the engine scroll:
-  //   ~0.14–0.41  the five pillar nodes fire out of the hub, one at a time
-  //   ~0.42–0.61  each node's two satellites fire out, one at a time
-  //   ~0.60–0.68  the labels (all the words) fade up
+  //   ~0.00–0.04  the centered hub is the lime dot the Chapter 04 circle became
+  //   ~0.04–0.20  the heading reads, then clears
+  //   ~0.20–0.45  the five pillar nodes fire out of the hub, one at a time
+  //   ~0.46–0.65  each node's two satellites fire out, one at a time
+  //   ~0.62–0.70  the labels (all the words) fade up
   //   ~0.76–0.94  the whole web collapses up into the timeline bar
   const morph = useTransform(eP, [0.76, 0.94], [0, 1]);
 
-  // Fade the whole rail in as the engine starts, out only as the journey ends.
+  // Fade the whole rail in as the engine starts, out only at the very end of
+  // the journey (kept late so the five labels persist through every pillar).
   const fadeIn = useTransform(eP, [0, 0.02], [0, 1]);
-  const fadeOut = useTransform(tailP, [0.2, 0.7], [1, 0]);
+  const fadeOut = useTransform(tailP, [0.45, 0.85], [1, 0]);
   const railShow = useTransform([fadeIn, fadeOut] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
 
   // Web ornamentation (hub, spokes, mesh, satellites) fades as the bar forms.
   const webFade = useTransform(eP, [0.74, 0.84], [1, 0]);
-  const hubIn = useTransform(eP, [0, 0.04], [0, 1]);
+  const hubIn = useTransform(eP, [0, 0.03], [0, 1]);
   const hubOpacity = useTransform([hubIn, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
-  const labelsIn = useTransform(eP, [0.6, 0.68], [0, 1]);
+  // The five labels ramp up once the web is built and STAY up forever (eP holds
+  // at 1 through the pillars), so the timeline keeps its names.
+  const labelsIn = useTransform(eP, [0.62, 0.7], [0, 1]);
   const subLabelOpacity = useTransform([labelsIn, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
-  const meshOpacity = useTransform(eP, [0.36, 0.46, 0.74, 0.82], [0, 0.32, 0.32, 0]);
-  const railLineOpacity = useTransform(eP, [0.6, 0.7], [0, 1]);
+  const meshOpacity = useTransform(eP, [0.4, 0.5, 0.74, 0.82], [0, 0.32, 0.32, 0]);
+  const railLineOpacity = useTransform(eP, [0.62, 0.72], [0, 1]);
 
   // Per-node emergence (staggered) — the "one at a time" firing.
   const mainEmerge = engineNodes.map((_, i) => {
-    const s = 0.14 + i * 0.05;
+    const s = 0.2 + i * 0.045;
     return useTransform(eP, [s, s + 0.07], [0, 1]);
   });
   const subEmerge = subNodes.map((_, i) => {
-    const s = 0.42 + i * 0.016;
+    const s = 0.46 + i * 0.015;
     return useTransform(eP, [s, s + 0.05], [0, 1]);
   });
   // Dots appear as they fire and stay solid; satellites/spokes fade on collapse.
@@ -739,12 +775,14 @@ export default function Home() {
     <main className="rf-page">
       <div className="rf-backdrop" aria-hidden />
 
-      {/* 1 — Hero */}
+      {/* 1 — Hero — opens on a small black disc with a "scroll" cue */}
       <BurstStatement
         height={2.1}
         heading={[{ text: "Own the" }, { text: "Sock Drawer.", accent: true }]}
         id="top"
         kicker="Born on a Florida muni · Made in the USA"
+        scrollHint
+        startRadius={7}
         sub="Golf upgraded everything but the sock drawer. Del Campo makes the pair golf recognizes."
         theme="black"
       />
@@ -845,7 +883,7 @@ export default function Home() {
         heading={[{ text: "Socks" }, { text: "are next.", accent: true }]}
         kicker="Chapter 03 · The Position"
         sub="What needlepoint belts did for golf accessories, Del Campo can do for the sock — performance underneath, fashion on top."
-        theme="lime"
+        theme="green"
       />
 
       {/* 5 — The Position (fashion + performance wedge) */}
@@ -867,13 +905,16 @@ export default function Home() {
         ]}
       />
 
-      {/* Chapter 04 — The Engine */}
+      {/* Chapter 04 — The Engine. Lime, and its circle collapses down to a
+          hub-sized disc so it reads as the Marketing Engine nucleus on the
+          next section. */}
       <BurstStatement
+        collapseTo={2.4}
         heading={[{ text: "Five ways" }, { text: "into golf.", accent: true }]}
         height={2.1}
         kicker="Chapter 04 · The Engine"
         sub="Events, green grass, ambassadors, media, retail. One engine that compounds — not five campaigns that don't."
-        theme="green"
+        theme="lime"
       />
 
       {/* 6 — The journey: engine network morphs into a persistent rail that
