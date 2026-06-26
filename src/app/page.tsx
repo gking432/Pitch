@@ -221,15 +221,17 @@ function BurstBody({
   const rawClip = useTransform(progress, [0, 0.3, 0.74, 0.93], [startRadius, 75, 75, collapseTo]);
   const clipR = useSpring(rawClip, { stiffness: 80, damping: 26 });
   const clip = useMotionTemplate`circle(${clipR}% at 50% 50%)`;
-  // The "scroll" hint sits on the small starting disc and clears fast as it blooms.
-  const hintOpacity = useTransform(progress, [0, 0.08], [1, 0]);
+  // The "scroll" hint clears the instant the user starts scrolling. Driven by a
+  // boolean toggle + CSS transition (rock-solid) rather than a scroll transform.
+  const [scrolled, setScrolled] = useState(false);
+  useMotionValueEvent(progress, "change", (p) => setScrolled(p > 0.01));
   return (
     <>
       <motion.div aria-hidden className="rf-burst-iris" style={{ clipPath: clip, WebkitClipPath: clip }} />
       {scrollHint ? (
-        <motion.span aria-hidden className="rf-burst-hint" style={{ opacity: hintOpacity }}>
+        <span aria-hidden className={`rf-burst-hint ${scrolled ? "is-gone" : ""}`}>
           Scroll
-        </motion.span>
+        </span>
       ) : null}
       <div className="rf-burst-content">
         {kicker ? (
@@ -466,21 +468,6 @@ function RoadStep({ step, index, progress, s }: { step: string; index: number; p
 /* lime as you move through the five pillars below it.                 */
 /* ------------------------------------------------------------------ */
 
-function EngineHeading({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
-  const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
-  // The hub (the lime dot the Chapter 04 circle became) reads alone for a beat,
-  // then the heading rises over it, then clears before the nodes fire (~0.2).
-  const opacity = useTransform(scrollYProgress, [0.04, 0.08, 0.16, 0.2], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0.04, 0.08], [0.96, 1]);
-  return (
-    <motion.div className="rf-engine-text" style={{ opacity, scale }}>
-      <Kicker>The Marketing Engine</Kicker>
-      <h2>One engine. Five ways in.</h2>
-      <p>Events seed it. Green grass stocks it. Ambassadors prove it. Media spreads it. Retail scales it.</p>
-    </motion.div>
-  );
-}
-
 function JourneyRail({
   engineRef,
   tailRef,
@@ -495,34 +482,44 @@ function JourneyRail({
   const { scrollYProgress: tailP } = useScroll({ target: tailRef, offset: ["start end", "start center"] });
 
   // Choreographed build along the engine scroll:
-  //   ~0.00–0.04  the centered hub is the lime dot the Chapter 04 circle became
-  //   ~0.04–0.20  the heading reads, then clears
-  //   ~0.20–0.45  the five pillar nodes fire out of the hub, one at a time
-  //   ~0.46–0.65  each node's two satellites fire out, one at a time
-  //   ~0.62–0.70  the labels (all the words) fade up
-  //   ~0.76–0.94  the whole web collapses up into the timeline bar
-  const morph = useTransform(eP, [0.76, 0.94], [0, 1]);
+  //   ~0.00–0.08  a lime circle blooms from the center (Chapter 04 portal)
+  //   ~0.08–0.18  "Five ways into golf." reads on the lime field
+  //   ~0.18–0.30  the lime circle SHRINKS down and becomes the hub nucleus
+  //   ~0.34–0.57  the five pillar nodes fire out of the hub, one at a time
+  //   ~0.60–0.77  each node's two satellites fire out, one at a time
+  //   ~0.80–0.95  the whole web collapses up into the timeline bar
+  const morph = useTransform(eP, [0.8, 0.95], [0, 1]);
 
-  // Fade the whole rail in as the engine starts, out only at the very end of
-  // the journey (kept late so the five labels persist through every pillar).
-  const fadeIn = useTransform(eP, [0, 0.02], [0, 1]);
+  // --- Chapter 04 lime portal that collapses straight into the hub --------
+  // The fade is folded into the clip (it shrinks to a point) so there's no
+  // stray lime dot left behind during the timeline.
+  const floodClipRaw = useTransform(eP, [0, 0.08, 0.18, 0.29, 0.34], [0, 75, 75, 2, 0]);
+  const floodClipR = useSpring(floodClipRaw, { stiffness: 90, damping: 24 });
+  const floodClip = useMotionTemplate`circle(${floodClipR}% at 50% 50%)`;
+  const floodTextOpacity = useTransform(eP, [0.04, 0.1, 0.17, 0.23], [0, 1, 1, 0]);
+
+  // Fade the whole rail in as the hub forms, out only at the very end of the
+  // journey (kept late so the five labels persist through every pillar).
+  const fadeIn = useTransform(eP, [0.24, 0.28], [0, 1]);
   const fadeOut = useTransform(tailP, [0.45, 0.85], [1, 0]);
   const railShow = useTransform([fadeIn, fadeOut] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
 
   // Web ornamentation (hub, spokes, mesh, satellites) fades as the bar forms.
-  const webFade = useTransform(eP, [0.74, 0.84], [1, 0]);
-  const hubIn = useTransform(eP, [0, 0.03], [0, 1]);
+  const webFade = useTransform(eP, [0.78, 0.88], [1, 0]);
+  // The hub fades in exactly as the lime circle collapses to its size, so the
+  // circle reads as becoming the nucleus.
+  const hubIn = useTransform(eP, [0.26, 0.32], [0, 1]);
   const hubOpacity = useTransform([hubIn, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
-  const meshOpacity = useTransform(eP, [0.4, 0.5, 0.74, 0.82], [0, 0.32, 0.32, 0]);
-  const railLineOpacity = useTransform(eP, [0.62, 0.72], [0, 1]);
+  const meshOpacity = useTransform(eP, [0.54, 0.62, 0.78, 0.86], [0, 0.32, 0.32, 0]);
+  const railLineOpacity = useTransform(eP, [0.66, 0.76], [0, 1]);
 
   // Per-node emergence (staggered) — the "one at a time" firing.
   const mainEmerge = engineNodes.map((_, i) => {
-    const s = 0.2 + i * 0.045;
+    const s = 0.34 + i * 0.045;
     return useTransform(eP, [s, s + 0.07], [0, 1]);
   });
   const subEmerge = subNodes.map((_, i) => {
-    const s = 0.46 + i * 0.015;
+    const s = 0.6 + i * 0.013;
     return useTransform(eP, [s, s + 0.05], [0, 1]);
   });
   // Dots appear as they fire and stay solid; satellites/spokes fade on collapse.
@@ -559,8 +556,16 @@ function JourneyRail({
   const hubY = useTransform(morph, (m) => lerp(HUB.net[1], barY, m));
 
   return (
-    <motion.div className="rf-rail" aria-hidden style={{ opacity: railShow }}>
-      <div className="rf-rail-stage">
+    <>
+      {/* Chapter 04 lime portal — blooms, reads, then shrinks into the hub */}
+      <motion.div aria-hidden className="rf-engine-flood" style={{ clipPath: floodClip, WebkitClipPath: floodClip }} />
+      <motion.div className="rf-engine-flood-text" style={{ opacity: floodTextOpacity }}>
+        <Kicker>Chapter 04 · The Engine</Kicker>
+        <h2>Five ways into golf.</h2>
+      </motion.div>
+
+      <motion.div className="rf-rail" aria-hidden style={{ opacity: railShow }}>
+        <div className="rf-rail-stage">
         <svg className="rf-net-wires" preserveAspectRatio="none" viewBox="0 0 100 100">
           {/* hub spokes — draw out as each node fires, then fade */}
           {engineNodes.map((_, i) => (
@@ -676,8 +681,9 @@ function JourneyRail({
             </motion.div>
           );
         })}
-      </div>
-    </motion.div>
+        </div>
+      </motion.div>
+    </>
   );
 }
 
@@ -899,28 +905,15 @@ export default function Home() {
         ]}
       />
 
-      {/* Chapter 04 — The Engine. Lime, and its circle collapses down to a
-          hub-sized disc so it reads as the Marketing Engine nucleus on the
-          next section. */}
-      <BurstStatement
-        collapseTo={2.4}
-        heading={[{ text: "Five ways" }, { text: "into golf.", accent: true }]}
-        height={2.1}
-        kicker="Chapter 04 · The Engine"
-        sub="Events, green grass, ambassadors, media, retail. One engine that compounds — not five campaigns that don't."
-        theme="lime"
-      />
-
-      {/* 6 — The journey: engine network morphs into a persistent rail that
-          stays pinned at the top through all five pillars */}
+      {/* 6 — The journey: Chapter 04's lime portal collapses into the hub, the
+          web builds, then it all morphs into the persistent timeline rail */}
       <div className="rf-journey">
         <JourneyRail active={active} engineRef={engineRef} tailRef={tailRef} />
 
-        {/* The Marketing Engine heading; the web assembles below it */}
-        <section className="rf-scene rf-engine-track" id="engine-view" ref={engineRef} style={{ minHeight: "480vh" }}>
-          <div className="rf-sticky">
-            <EngineHeading targetRef={engineRef} />
-          </div>
+        {/* Scroll runway for the whole engine build (visuals live in the fixed
+            JourneyRail above; this section just drives the scroll progress). */}
+        <section className="rf-scene rf-engine-track" id="engine-view" ref={engineRef} style={{ minHeight: "560vh" }}>
+          <div className="rf-sticky" aria-hidden />
         </section>
 
       {/* 7 — Pillar 01: Events (falling socks → roadmap) */}
