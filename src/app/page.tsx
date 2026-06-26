@@ -222,7 +222,7 @@ function BurstBody({
   const clipR = useSpring(rawClip, { stiffness: 80, damping: 26 });
   const clip = useMotionTemplate`circle(${clipR}% at 50% 50%)`;
   // The "scroll" hint sits on the small starting disc and clears fast as it blooms.
-  const hintOpacity = useTransform(progress, [0, 0.05, 0.1], [1, 1, 0]);
+  const hintOpacity = useTransform(progress, [0, 0.08], [1, 0]);
   return (
     <>
       <motion.div aria-hidden className="rf-burst-iris" style={{ clipPath: clip, WebkitClipPath: clip }} />
@@ -513,10 +513,6 @@ function JourneyRail({
   const webFade = useTransform(eP, [0.74, 0.84], [1, 0]);
   const hubIn = useTransform(eP, [0, 0.03], [0, 1]);
   const hubOpacity = useTransform([hubIn, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
-  // The five labels ramp up once the web is built and STAY up forever (eP holds
-  // at 1 through the pillars), so the timeline keeps its names.
-  const labelsIn = useTransform(eP, [0.62, 0.7], [0, 1]);
-  const subLabelOpacity = useTransform([labelsIn, webFade] as MotionValue[], ([a, b]: number[]) => Math.min(a, b));
   const meshOpacity = useTransform(eP, [0.4, 0.5, 0.74, 0.82], [0, 0.32, 0.32, 0]);
   const railLineOpacity = useTransform(eP, [0.62, 0.72], [0, 1]);
 
@@ -645,9 +641,7 @@ function JourneyRail({
             }}
           >
             <span className="rf-net-dot" style={{ width: s.size, height: s.size }} />
-            <motion.span className="rf-subnode-label" style={{ opacity: subLabelOpacity }}>
-              {s.label}
-            </motion.span>
+            <span className="rf-subnode-label">{s.label}</span>
           </motion.div>
         ))}
 
@@ -676,7 +670,7 @@ function JourneyRail({
               <motion.span className={`rf-rail-disc ${filled ? "is-on" : ""}`} style={{ width: nodeSizes[i], height: nodeSizes[i] }}>
                 <span className={`rf-rail-fill ${filled ? "is-on" : ""}`} />
               </motion.span>
-              <motion.span className={`rf-rail-label ${active === i ? "is-active" : ""}`} style={{ opacity: labelsIn }}>
+              <motion.span className={`rf-rail-label ${active === i ? "is-active" : ""}`} style={{ opacity: nodeOpacity[i] }}>
                 {n.label}
               </motion.span>
             </motion.div>
